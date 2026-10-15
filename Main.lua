@@ -226,10 +226,7 @@ AimSection:AddSlider({
         Logic.setSmoothness(value)
     end
 })
-WorldTab:CreateToggle({
-    Name = "Highlight Loners",
-    Callback = function(v) Logic.setLonersHighlight(v) end,
-})
+
 ----------
 -- Aim: players
 ----------
@@ -241,9 +238,22 @@ PlayerAimSection:AddToggle({
         Logic.setPlayerAim(enabled)
     end
 })
+WorldTab:CreateToggle({
+    Name = "Highlight Loners",
+    Callback = function(v) Logic.setLonersHighlight(v) end,
+})
 Tab:CreateToggle({
     Name = "Highlight Loners",
     Callback = function(v) Logic.setLonersHighlight(v) end,
+})
+
+WorldSection:AddToggle({
+    Name = "Highlight Loners",
+    Flag = "Loners_Highlight_Toggle",
+    Value = false,
+    Callback = function(enabled)
+        Logic.setLonersHighlight(enabled)
+    end
 })
 PlayerAimSection:AddDropdown({
     Name = "Player Aim Part",
