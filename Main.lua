@@ -1,4 +1,3 @@
-
 local LOGIC_URL = "https://raw.githubusercontent.com/Fries-dev/LizardWareRLBX/refs/heads/main/Logic.lua"
 
 local function loadLogic()
@@ -43,6 +42,7 @@ local AimTab     = PepsisWorld:CreateTab({ Name = "Aim" })
 local ScriptSection        = GeneralTab:CreateSection({ Name = "Script" })
 local Boulder              = GeneralTab:CreateSection({ Name = "Holder" })
 local WorldSection         = WorldTab:CreateSection({ Name = "World" })
+local LonersSection        = WorldTab:CreateSection({ Name = "Loners" })
 local WorldSettingsSection = WorldTab:CreateSection({ Name = "Settings" })
 local PlayerEspSection     = PlayersTab:CreateSection({ Name = "Player ESP" })
 local AimSection           = AimTab:CreateSection({ Name = "Soldier Aim Lock" })
@@ -82,12 +82,10 @@ Boulder:AddToggle({
 -- World
 ----------
 local worldToggles = {
-    { "Show Nodes",              "Nodes_Toggle",         "Nodes" },
-    { "Show Drops",              "Drops_Toggle",         "Drops" },
-    { "Show Metal Crates",       "Metal_Crates_Toggle",  "Metal Crates" },
-    { "Show Wooden Crates",      "Wooden_Crates_Toggle", "Wooden Crates" },
-    { "Show Soldiers",           "Soldiers_Toggle",      "Soldiers" },
-    { "Show Cloth",              "Cloth_Toggle",         "Cloth" },
+    { "Show Nodes",    "Nodes_Toggle",    "Nodes" },
+    { "Show Drops",    "Drops_Toggle",    "Drops" },
+    { "Show Soldiers", "Soldiers_Toggle", "Soldiers" },
+    { "Show Cloth",    "Cloth_Toggle",    "Cloth" },
 }
 
 for _, t in ipairs(worldToggles) do
@@ -110,6 +108,60 @@ WorldSection:AddToggle({
     end
 })
 
+----------
+-- Loners
+----------
+LonersSection:AddToggle({
+    Name = "Show Loners",
+    Flag = "Loners_Toggle",
+    Value = false,
+    Callback = function(enabled)
+        Logic.setLonersHighlight(enabled)
+    end
+})
+
+local LonersDropdown = LonersSection:AddDropdown({
+    Name = "Loners Folders",
+    Flag = "Loners_Which",
+    List = Logic.getLonersCategories(),
+    Multi = true,
+    Callback = function(selected)
+        Logic.setLonersSelection(selected)
+    end
+})
+LonersDropdown:Set({"All"})
+
+LonersSection:AddButton({
+    Name = "Refresh Loners List",
+    Callback = function()
+        local list = Logic.getLonersCategories()
+        print("Loners folders: " .. table.concat(list, ", "))
+
+        -- Different UI libraries name this differently, so try the common ones
+        for _, method in ipairs({"Refresh", "SetList", "SetOptions", "UpdateList"}) do
+            if type(LonersDropdown[method]) == "function" then
+                local ok = pcall(function()
+                    LonersDropdown[method](LonersDropdown, list)
+                end)
+                if ok then return end
+            end
+        end
+        warn("Dropdown can't refresh live. Re-execute the script once the Loners folder has loaded.")
+    end
+})
+
+LonersSection:AddColorPicker({
+    Name = "Loners Color",
+    Flag = "Loners_Color",
+    Value = Color3.fromRGB(255, 80, 80),
+    Callback = function(color)
+        Logic.setLonersColor(color)
+    end
+})
+
+----------
+-- World settings
+----------
 WorldSettingsSection:AddToggle({
     Name = "Highlight World Items",
     Flag = "World_Highlight_Toggle",
@@ -122,7 +174,7 @@ WorldSettingsSection:AddToggle({
 local HighlightDropdown = WorldSettingsSection:AddDropdown({
     Name = "Highlight Which",
     Flag = "World_Highlight_Which",
-    List = {"All", "Nodes", "Drops", "Metal Crates", "Wooden Crates", "Soldiers", "Cloth"},
+    List = {"All", "Nodes", "Drops", "Soldiers", "Cloth"},
     Multi = true,
     Callback = function(selected)
         Logic.setHighlightSelection(selected)
@@ -238,23 +290,7 @@ PlayerAimSection:AddToggle({
         Logic.setPlayerAim(enabled)
     end
 })
-WorldTab:CreateToggle({
-    Name = "Highlight Loners",
-    Callback = function(v) Logic.setLonersHighlight(v) end,
-})
-Tab:CreateToggle({
-    Name = "Highlight Loners",
-    Callback = function(v) Logic.setLonersHighlight(v) end,
-})
 
-WorldSection:AddToggle({
-    Name = "Highlight Loners",
-    Flag = "Loners_Highlight_Toggle",
-    Value = false,
-    Callback = function(enabled)
-        Logic.setLonersHighlight(enabled)
-    end
-})
 PlayerAimSection:AddDropdown({
     Name = "Player Aim Part",
     Flag = "Player_Aim_Part",

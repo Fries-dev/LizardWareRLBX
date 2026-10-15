@@ -22,8 +22,6 @@ local lastPrintedState = {}
 
 local nodeEspEnabled = false
 local dropsEspEnabled = false
-local metalCratesEspEnabled = false
-local woodenCratesEspEnabled = false
 local soldierEspEnabled = false
 local clothEspEnabled = false
 local worldHighlightEnabled = false
@@ -34,8 +32,6 @@ local activeWorldGuis = {}
 local activeWorldHighlights = {}
 local worldRenderConnection = nil
 local worldDropScannerThread = nil
-local worldCratesScannerThread = nil
-local worldMilitaryScannerThread = nil
 local worldSoldierScannerThread = nil
 local worldClothScannerThread = nil
 
@@ -318,8 +314,6 @@ local function removeWorldEsp()
     end
 
     worldDropScannerThread = cancelThread(worldDropScannerThread)
-    worldCratesScannerThread = cancelThread(worldCratesScannerThread)
-    worldMilitaryScannerThread = cancelThread(worldMilitaryScannerThread)
     worldSoldierScannerThread = cancelThread(worldSoldierScannerThread)
     worldClothScannerThread = cancelThread(worldClothScannerThread)
 end
@@ -398,8 +392,7 @@ end
 local function refreshWorldEsp()
     removeWorldEsp()
 
-    if not nodeEspEnabled and not dropsEspEnabled and not metalCratesEspEnabled
-        and not woodenCratesEspEnabled
+    if not nodeEspEnabled and not dropsEspEnabled
         and not soldierEspEnabled and not clothEspEnabled then
         return
     end
@@ -429,29 +422,7 @@ local function refreshWorldEsp()
         end)
     end
 
-    -- 3. Crates
-    if metalCratesEspEnabled or woodenCratesEspEnabled then
-        worldCratesScannerThread = task.spawn(function()
-            while metalCratesEspEnabled or woodenCratesEspEnabled do
-                for _, item in ipairs(workspace:GetDescendants()) do
-                    if item:IsA("Model") or item:IsA("BasePart") then
-                        local nameLower = string.lower(item.Name)
-                        if metalCratesEspEnabled and string.find(nameLower, "metal") and string.find(nameLower, "crate") then
-                            createWorldElements(item, nil, "Metal Crates")
-                        end
-                        if woodenCratesEspEnabled and (string.find(nameLower, "wood") or string.find(nameLower, "wooden")) and string.find(nameLower, "crate") then
-                            createWorldElements(item, nil, "Wooden Crates")
-                        end
-                    end
-                end
-                task.wait(2)
-            end
-        end)
-    end
-
-
-
-    -- 5. Soldiers
+    -- 3. Soldiers
     if soldierEspEnabled then
         worldSoldierScannerThread = task.spawn(function()
             while soldierEspEnabled do
@@ -468,7 +439,7 @@ local function refreshWorldEsp()
         end)
     end
 
-    -- 6. Cloth (inside Plants)
+    -- 4. Cloth (inside Plants)
     if clothEspEnabled then
         worldClothScannerThread = task.spawn(function()
             while clothEspEnabled do
@@ -489,6 +460,182 @@ local function refreshWorldEsp()
 
     updateDistanceCheck()
     worldRenderConnection = RunService.RenderStepped:Connect(updateDistanceCheck)
+end
+
+------------------
+-- Loners ESP
+------------------
+local lonersEnabled = false
+local lonersThread = nil
+local lonersRenderConn = nil
+local lonersObjects = {}   -- [item] = { gui = BillboardGui, hl = Highlight }
+local lonersColor = Color3.fromRGB(255, 80, 80)
+local lonersSelection = { All = true }
+
+local function getLonersFolder()
+    local bases = workspace:FindFirstChild("Bases")
+    return bases and bases:FindFirstChild("Loners")
+end
+
+-- Names of everything directly inside Bases.Loners (used for the dropdown)
+local function getLonersCategories()
+    local names, seen = {}, {}
+    local folder = getLonersFolder()
+    if folder then
+        for _, child in ipairs(folder:GetChildren()) do
+            if not seen[child.Name] then
+                seen[child.Name] = true
+                table.insert(names, child.Name)
+            end
+        end
+    end
+    table.sort(names)
+    table.insert(names, 1, "All")
+    return names
+end
+
+local function createLonerElements(item)
+    local existing = lonersObjects[item]
+    if existing and existing.gui and existing.gui.Parent then return end
+
+    local part = item:IsA("BasePart") and item or item:FindFirstChildWhichIsA("BasePart", true)
+    if not part then return end
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "LonerTextGui"
+    billboard.Size = UDim2.new(0, 150, 0, 40)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.AlwaysOnTop = true
+    billboard.Adornee = part
+    billboard.Parent = item
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = string.gsub(item.Name, "_", " ")
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextStrokeTransparency = 0
+    label.TextSize = 15
+    label.Font = Enum.Font.SourceSansBold
+    label.Parent = billboard
+
+    local hl = Instance.new("Highlight")
+    hl.Name = "LonerHighlight"
+    hl.Adornee = item
+    hl.FillColor = lonersColor
+    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+    hl.FillTransparency = 0.5
+    hl.OutlineTransparency = 0
+    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    hl.Parent = item
+
+    lonersObjects[item] = { gui = billboard, hl = hl }
+end
+
+-- Every model/part inside a folder gets an ESP (subfolders are searched too)
+local function collectLonerItems(container)
+    for _, child in ipairs(container:GetChildren()) do
+        if child:IsA("Model") or child:IsA("BasePart") then
+            createLonerElements(child)
+        elseif child:IsA("Folder") then
+            collectLonerItems(child)
+        end
+    end
+end
+
+local function scanLoners()
+    local folder = getLonersFolder()
+    if not folder then return end
+
+    for _, child in ipairs(folder:GetChildren()) do
+        if lonersSelection["All"] or lonersSelection[child.Name] then
+            if child:IsA("Folder") then
+                collectLonerItems(child)
+            elseif child:IsA("Model") or child:IsA("BasePart") then
+                createLonerElements(child)
+            end
+        end
+    end
+end
+
+local function updateLonersDistance()
+    local char = localPlayer.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    for item, obj in pairs(lonersObjects) do
+        local pos = item.Parent and getObjectPosition(item)
+        if pos then
+            local inRange = (root.Position - pos).Magnitude <= worldMaxDistance
+            if obj.gui then obj.gui.Enabled = inRange end
+            if obj.hl then obj.hl.Enabled = inRange end
+        end
+    end
+end
+
+local function clearLoners()
+    for item, obj in pairs(lonersObjects) do
+        if obj.gui then obj.gui:Destroy() end
+        if obj.hl then obj.hl:Destroy() end
+        lonersObjects[item] = nil
+    end
+end
+
+local function stopLoners()
+    if lonersThread then
+        task.cancel(lonersThread)
+        lonersThread = nil
+    end
+    if lonersRenderConn then
+        lonersRenderConn:Disconnect()
+        lonersRenderConn = nil
+    end
+    clearLoners()
+end
+
+local function startLoners()
+    stopLoners()
+    if not lonersEnabled then return end
+
+    lonersThread = task.spawn(function()
+        while lonersEnabled do
+            -- forget items that were removed from the world
+            for item, obj in pairs(lonersObjects) do
+                if not item.Parent then
+                    if obj.gui then obj.gui:Destroy() end
+                    if obj.hl then obj.hl:Destroy() end
+                    lonersObjects[item] = nil
+                end
+            end
+            scanLoners()
+            task.wait(1)
+        end
+    end)
+
+    lonersRenderConn = RunService.RenderStepped:Connect(updateLonersDistance)
+end
+
+local function setLonersHighlight(enabled)
+    lonersEnabled = enabled
+    startLoners()
+end
+
+local function setLonersSelection(selected)
+    local result = normalizeSelection(selected)
+    if next(result) == nil then
+        result = { All = true }
+    end
+    lonersSelection = result
+    startLoners()
+end
+
+local function setLonersColor(color)
+    lonersColor = color
+    for _, obj in pairs(lonersObjects) do
+        if obj.hl and obj.hl.Parent then
+            obj.hl.FillColor = color
+        end
+    end
 end
 
 ------------------
@@ -1039,90 +1186,7 @@ local function setNoRecoil(enabled)
         end
     end)
 end
-------------------
--- Loners highlight
-------------------
-local lonersEnabled = false
-local lonersThread = nil
-local lonersHighlights = {}   -- [model] = Highlight
-local lonersColor = Color3.fromRGB(255, 80, 80)
 
-local function getLonersFolder()
-    local bases = workspace:FindFirstChild("Bases")
-    return bases and bases:FindFirstChild("Loners")
-end
-
-local function highlightLoner(model)
-    local existing = lonersHighlights[model]
-    if existing and existing.Parent then return end
-
-    local hl = Instance.new("Highlight")
-    hl.Name = "LonerHighlight"
-    hl.Adornee = model
-    hl.FillColor = lonersColor
-    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
-    hl.FillTransparency = 0.5
-    hl.OutlineTransparency = 0
-    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    hl.Parent = model
-    lonersHighlights[model] = hl
-end
-
--- Highlights the top-most model in each branch (Highlight already covers its descendants)
-local function scanLoners(container)
-    for _, child in ipairs(container:GetChildren()) do
-        if child:IsA("Model") then
-            highlightLoner(child)
-        elseif child:IsA("Folder") then
-            scanLoners(child)
-        end
-    end
-end
-
-local function clearLoners()
-    for model, hl in pairs(lonersHighlights) do
-        if hl then hl:Destroy() end
-        lonersHighlights[model] = nil
-    end
-end
-
-local function setLonersHighlight(enabled)
-    lonersEnabled = enabled
-
-    if lonersThread then
-        task.cancel(lonersThread)
-        lonersThread = nil
-    end
-    clearLoners()
-
-    if not enabled then return end
-
-    lonersThread = task.spawn(function()
-        while lonersEnabled do
-            local folder = getLonersFolder()
-            if folder then
-                -- drop highlights for models that were removed
-                for model, hl in pairs(lonersHighlights) do
-                    if not model.Parent then
-                        if hl then hl:Destroy() end
-                        lonersHighlights[model] = nil
-                    end
-                end
-                scanLoners(folder)
-            end
-            task.wait(1)
-        end
-    end)
-end
-
-local function setLonersColor(color)
-    lonersColor = color
-    for _, hl in pairs(lonersHighlights) do
-        if hl and hl.Parent then
-            hl.FillColor = color
-        end
-    end
-end
 ------------------
 -- Disable everything
 ------------------
@@ -1131,10 +1195,9 @@ local function disableAll()
     setTrackerEnabled(false)
     setXray(false)
     setLonersHighlight(false)
+
     nodeEspEnabled = false
     dropsEspEnabled = false
-    metalCratesEspEnabled = false
-    woodenCratesEspEnabled = false
     soldierEspEnabled = false
     clothEspEnabled = false
     worldHighlightEnabled = false
@@ -1167,16 +1230,12 @@ end
 local worldToggles = {
     Nodes = function(v) nodeEspEnabled = v end,
     Drops = function(v) dropsEspEnabled = v end,
-    ["Metal Crates"] = function(v) metalCratesEspEnabled = v end,
-    ["Wooden Crates"] = function(v) woodenCratesEspEnabled = v end,
     Soldiers = function(v) soldierEspEnabled = v end,
     Cloth = function(v) clothEspEnabled = v end,
-    
 }
 
 -- Holder
 Logic.setTrackerEnabled = setTrackerEnabled
-
 
 -- World ESP
 function Logic.setWorldToggle(category, enabled)
@@ -1196,8 +1255,7 @@ function Logic.setHighlightSelection(selected)
     highlightSelection = normalizeSelection(selected)
     refreshWorldEsp()
 end
-Logic.setLonersHighlight = setLonersHighlight
-Logic.setLonersColor = setLonersColor
+
 function Logic.setHighlightColor(color)
     worldHighlightColor = color
     updateHighlightColors()
@@ -1207,6 +1265,12 @@ function Logic.setDistance(value)
     worldMaxDistance = value
     updateDistanceCheck()
 end
+
+-- Loners ESP
+Logic.setLonersHighlight = setLonersHighlight
+Logic.setLonersColor = setLonersColor
+Logic.setLonersSelection = setLonersSelection
+Logic.getLonersCategories = getLonersCategories
 
 -- Xray
 Logic.setXray = setXray
