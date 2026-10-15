@@ -226,7 +226,10 @@ AimSection:AddSlider({
         Logic.setSmoothness(value)
     end
 })
-
+WorldTab:CreateToggle({
+    Name = "Highlight Loners",
+    Callback = function(v) Logic.setLonersHighlight(v) end,
+})
 ----------
 -- Aim: players
 ----------
