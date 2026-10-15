@@ -238,7 +238,10 @@ PlayerAimSection:AddToggle({
         Logic.setPlayerAim(enabled)
     end
 })
-
+Tab:CreateToggle({
+    Name = "Highlight Loners",
+    Callback = function(v) Logic.setLonersHighlight(v) end,
+})
 PlayerAimSection:AddDropdown({
     Name = "Player Aim Part",
     Flag = "Player_Aim_Part",

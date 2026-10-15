@@ -1039,7 +1039,90 @@ local function setNoRecoil(enabled)
         end
     end)
 end
+------------------
+-- Loners highlight
+------------------
+local lonersEnabled = false
+local lonersThread = nil
+local lonersHighlights = {}   -- [model] = Highlight
+local lonersColor = Color3.fromRGB(255, 80, 80)
 
+local function getLonersFolder()
+    local bases = workspace:FindFirstChild("Bases")
+    return bases and bases:FindFirstChild("Loners")
+end
+
+local function highlightLoner(model)
+    local existing = lonersHighlights[model]
+    if existing and existing.Parent then return end
+
+    local hl = Instance.new("Highlight")
+    hl.Name = "LonerHighlight"
+    hl.Adornee = model
+    hl.FillColor = lonersColor
+    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+    hl.FillTransparency = 0.5
+    hl.OutlineTransparency = 0
+    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    hl.Parent = model
+    lonersHighlights[model] = hl
+end
+
+-- Highlights the top-most model in each branch (Highlight already covers its descendants)
+local function scanLoners(container)
+    for _, child in ipairs(container:GetChildren()) do
+        if child:IsA("Model") then
+            highlightLoner(child)
+        elseif child:IsA("Folder") then
+            scanLoners(child)
+        end
+    end
+end
+
+local function clearLoners()
+    for model, hl in pairs(lonersHighlights) do
+        if hl then hl:Destroy() end
+        lonersHighlights[model] = nil
+    end
+end
+
+local function setLonersHighlight(enabled)
+    lonersEnabled = enabled
+
+    if lonersThread then
+        task.cancel(lonersThread)
+        lonersThread = nil
+    end
+    clearLoners()
+
+    if not enabled then return end
+
+    lonersThread = task.spawn(function()
+        while lonersEnabled do
+            local folder = getLonersFolder()
+            if folder then
+                -- drop highlights for models that were removed
+                for model, hl in pairs(lonersHighlights) do
+                    if not model.Parent then
+                        if hl then hl:Destroy() end
+                        lonersHighlights[model] = nil
+                    end
+                end
+                scanLoners(folder)
+            end
+            task.wait(1)
+        end
+    end)
+end
+
+local function setLonersColor(color)
+    lonersColor = color
+    for _, hl in pairs(lonersHighlights) do
+        if hl and hl.Parent then
+            hl.FillColor = color
+        end
+    end
+end
 ------------------
 -- Disable everything
 ------------------
@@ -1047,7 +1130,7 @@ local function disableAll()
     setNoRecoil(false)
     setTrackerEnabled(false)
     setXray(false)
-
+    setLonersHighlight(false)
     nodeEspEnabled = false
     dropsEspEnabled = false
     metalCratesEspEnabled = false
@@ -1088,10 +1171,12 @@ local worldToggles = {
     ["Wooden Crates"] = function(v) woodenCratesEspEnabled = v end,
     Soldiers = function(v) soldierEspEnabled = v end,
     Cloth = function(v) clothEspEnabled = v end,
+    
 }
 
 -- Holder
 Logic.setTrackerEnabled = setTrackerEnabled
+
 
 -- World ESP
 function Logic.setWorldToggle(category, enabled)
@@ -1111,7 +1196,8 @@ function Logic.setHighlightSelection(selected)
     highlightSelection = normalizeSelection(selected)
     refreshWorldEsp()
 end
-
+Logic.setLonersHighlight = setLonersHighlight
+Logic.setLonersColor = setLonersColor
 function Logic.setHighlightColor(color)
     worldHighlightColor = color
     updateHighlightColors()
