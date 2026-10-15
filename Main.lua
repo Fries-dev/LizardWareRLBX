@@ -79,7 +79,6 @@ local worldToggles = {
     { "Show Drops",              "Drops_Toggle",         "Drops" },
     { "Show Metal Crates",       "Metal_Crates_Toggle",  "Metal Crates" },
     { "Show Wooden Crates",      "Wooden_Crates_Toggle", "Wooden Crates" },
-    { "Show Military Monuments", "Military_Toggle",      "Military Monuments" },
     { "Show Soldiers",           "Soldiers_Toggle",      "Soldiers" },
     { "Show Cloth",              "Cloth_Toggle",         "Cloth" },
 }
@@ -116,7 +115,7 @@ WorldSettingsSection:AddToggle({
 local HighlightDropdown = WorldSettingsSection:AddDropdown({
     Name = "Highlight Which",
     Flag = "World_Highlight_Which",
-    List = {"All", "Nodes", "Drops", "Metal Crates", "Wooden Crates", "Military Monuments", "Soldiers", "Cloth"},
+    List = {"All", "Nodes", "Drops", "Metal Crates", "Wooden Crates", "Soldiers", "Cloth"},
     Multi = true,
     Callback = function(selected)
         Logic.setHighlightSelection(selected)

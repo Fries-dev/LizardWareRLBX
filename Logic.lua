@@ -24,7 +24,6 @@ local nodeEspEnabled = false
 local dropsEspEnabled = false
 local metalCratesEspEnabled = false
 local woodenCratesEspEnabled = false
-local militaryEspEnabled = false
 local soldierEspEnabled = false
 local clothEspEnabled = false
 local worldHighlightEnabled = false
@@ -400,7 +399,7 @@ local function refreshWorldEsp()
     removeWorldEsp()
 
     if not nodeEspEnabled and not dropsEspEnabled and not metalCratesEspEnabled
-        and not woodenCratesEspEnabled and not militaryEspEnabled
+        and not woodenCratesEspEnabled
         and not soldierEspEnabled and not clothEspEnabled then
         return
     end
@@ -450,22 +449,7 @@ local function refreshWorldEsp()
         end)
     end
 
-    -- 4. Military Monuments
-    if militaryEspEnabled then
-        worldMilitaryScannerThread = task.spawn(function()
-            while militaryEspEnabled do
-                for _, item in ipairs(workspace:GetDescendants()) do
-                    if item:IsA("Model") or item:IsA("BasePart") then
-                        local nameLower = string.lower(item.Name)
-                        if string.find(nameLower, "military") or string.find(nameLower, "monument") then
-                            createWorldElements(item, nil, "Military Monuments")
-                        end
-                    end
-                end
-                task.wait(2)
-            end
-        end)
-    end
+
 
     -- 5. Soldiers
     if soldierEspEnabled then
@@ -956,7 +940,6 @@ local function disableAll()
     dropsEspEnabled = false
     metalCratesEspEnabled = false
     woodenCratesEspEnabled = false
-    militaryEspEnabled = false
     soldierEspEnabled = false
     clothEspEnabled = false
     worldHighlightEnabled = false
@@ -991,7 +974,6 @@ local worldToggles = {
     Drops = function(v) dropsEspEnabled = v end,
     ["Metal Crates"] = function(v) metalCratesEspEnabled = v end,
     ["Wooden Crates"] = function(v) woodenCratesEspEnabled = v end,
-    ["Military Monuments"] = function(v) militaryEspEnabled = v end,
     Soldiers = function(v) soldierEspEnabled = v end,
     Cloth = function(v) clothEspEnabled = v end,
 }
