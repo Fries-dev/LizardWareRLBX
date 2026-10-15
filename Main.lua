@@ -2,7 +2,7 @@
 -- Players execute THIS file. It builds the UI and pulls everything else from Logic.lua.
 
 -- Where Logic.lua is hosted (raw link, e.g. GitHub raw / pastebin raw). Edit this.
-local LOGIC_URL = "https://raw.githubusercontent.com/YOURNAME/YOURREPO/main/Logic.lua"
+local LOGIC_URL = "https://raw.githubusercontent.com/Fries-dev/LizardWareRLBX/refs/heads/main/Logic.lua"
 
 local function loadLogic()
     -- Remote first; falls back to a local copy in your executor's workspace folder.
