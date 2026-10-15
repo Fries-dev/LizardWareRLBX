@@ -1,7 +1,4 @@
--- Main.lua
--- Players execute THIS file. It builds the UI and pulls everything else from Logic.lua.
 
--- Where Logic.lua is hosted (raw link, e.g. GitHub raw / pastebin raw). Edit this.
 local LOGIC_URL = "https://raw.githubusercontent.com/Fries-dev/LizardWareRLBX/refs/heads/main/Logic.lua"
 
 local function loadLogic()
@@ -51,6 +48,16 @@ local PlayerEspSection     = PlayersTab:CreateSection({ Name = "Player ESP" })
 local AimSection           = AimTab:CreateSection({ Name = "Soldier Aim Lock" })
 local PlayerAimSection     = AimTab:CreateSection({ Name = "Player Aim Lock" })
 local PredictionSection    = AimTab:CreateSection({ Name = "Prediction" })
+local WeaponSection        = AimTab:CreateSection({ Name = "Weapon" })
+
+WeaponSection:AddToggle({
+    Name = "No Recoil",
+    Flag = "No_Recoil_Toggle",
+    Value = false,
+    Callback = function(enabled)
+        Logic.setNoRecoil(enabled)
+    end
+})
 
 ----------
 -- General
