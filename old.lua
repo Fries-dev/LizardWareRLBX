@@ -929,122 +929,11 @@ local function setSoldierBox(enabled)
     updateBoxEspBinding()
 end
 
-------------------
--- No recoil
-------------------
-local noRecoilEnabled = false
-local noRecoilThread = nil
-local recoilRestore = {}      -- list of restore functions
-local recoilTouched = {}      -- [container][key] = true, so we only zero each value once
-
-local function isRecoilName(name)
-    local n = string.lower(tostring(name))
-    return string.find(n, "recoil", 1, true) ~= nil or string.find(n, "kick", 1, true) ~= nil
-end
-
-local function zeroValue(v)
-    local t = typeof(v)
-    if t == "number" then return 0 end
-    if t == "Vector3" then return Vector3.zero end
-    if t == "Vector2" then return Vector2.zero end
-    return nil
-end
-
-local function zeroInTable(tbl, depth, seen)
-    if depth > 3 or seen[tbl] then return end
-    seen[tbl] = true
-    for k, v in pairs(tbl) do
-        if type(v) == "table" then
-            zeroInTable(v, depth + 1, seen)
-        elseif isRecoilName(k) then
-            local zero = zeroValue(v)
-            if zero ~= nil and v ~= zero then
-                local ok = pcall(function() tbl[k] = zero end)
-                if ok then
-                    table.insert(recoilRestore, function() pcall(function() tbl[k] = v end) end)
-                end
-            end
-        end
-    end
-end
-
-local function applyNoRecoilToTool(tool)
-    for _, d in ipairs(tool:GetDescendants()) do
-        -- Value objects
-        if (d:IsA("NumberValue") or d:IsA("Vector3Value")) and isRecoilName(d.Name) then
-            recoilTouched[d] = recoilTouched[d] or {}
-            if not recoilTouched[d].v then
-                recoilTouched[d].v = true
-                local old = d.Value
-                d.Value = zeroValue(old)
-                table.insert(recoilRestore, function() pcall(function() d.Value = old end) end)
-            end
-        end
-        -- Weapon settings modules (shared tables)
-        if d:IsA("ModuleScript") and not recoilTouched[d] then
-            recoilTouched[d] = {}
-            local ok, result = pcall(require, d)
-            if ok and type(result) == "table" then
-                zeroInTable(result, 0, {})
-            end
-        end
-    end
-
-    -- Attributes on the tool and its descendants
-    local objs = tool:GetDescendants()
-    table.insert(objs, tool)
-    for _, o in ipairs(objs) do
-        for name, value in pairs(o:GetAttributes()) do
-            if isRecoilName(name) then
-                local zero = zeroValue(value)
-                if zero ~= nil and value ~= zero then
-                    o:SetAttribute(name, zero)
-                    table.insert(recoilRestore, function() pcall(function() o:SetAttribute(name, value) end) end)
-                end
-            end
-        end
-    end
-end
-
-local function setNoRecoil(enabled)
-    noRecoilEnabled = enabled
-
-    if noRecoilThread then
-        task.cancel(noRecoilThread)
-        noRecoilThread = nil
-    end
-
-    if not enabled then
-        for _, restore in ipairs(recoilRestore) do restore() end
-        recoilRestore = {}
-        recoilTouched = {}
-        return
-    end
-
-    noRecoilThread = task.spawn(function()
-        while noRecoilEnabled do
-            local char = localPlayer.Character
-            if char then
-                for _, tool in ipairs(char:GetChildren()) do
-                    if tool:IsA("Tool") then applyNoRecoilToTool(tool) end
-                end
-            end
-            local backpack = localPlayer:FindFirstChildOfClass("Backpack")
-            if backpack then
-                for _, tool in ipairs(backpack:GetChildren()) do
-                    if tool:IsA("Tool") then applyNoRecoilToTool(tool) end
-                end
-            end
-            task.wait(0.5)
-        end
-    end)
-end
 
 ------------------
 -- Disable everything
 ------------------
 local function disableAll()
-    setNoRecoil(false)
     setTrackerEnabled(false)
     setXray(false)
 
@@ -1174,8 +1063,6 @@ Logic.setSoldierBox = setSoldierBox
 function Logic.setBoxYOffset(value) boxYOffset = value end
 function Logic.setTeamCheck(enabled) teamCheckEnabled = enabled end
 
--- Weapon
-Logic.setNoRecoil = setNoRecoil
 
 -- Shutdown
 Logic.disableAll = disableAll
