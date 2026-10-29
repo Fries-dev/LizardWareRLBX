@@ -1101,11 +1101,36 @@ do
         -- Initialize the data table first so it's not nil
         local data = data or {}
 
+        local function getHandledItems(character)
+            local itemsFound = {}
+
+            for _, descendant in ipairs(character:GetDescendants()) do
+                local isUI = descendant:IsA("GuiObject") or descendant:IsA("LayerCollector") or descendant:IsA("GuiBase")
+
+                if not isUI and (descendant:IsA("Tool") or descendant:IsA("Model") or descendant:IsA("Accoutrement")) then
+                    local handle = descendant:FindFirstChild("Handle", true) or descendant:FindFirstChild("handle", true)
+                    if handle and handle:IsA("BasePart") then
+                        table.insert(itemsFound, descendant.Name)
+                    end
+                end
+            end
+
+            table.sort(itemsFound)
+            return itemsFound
+        end
+
         data.tool_added = function(item)
-            if not item:IsA("Tool") then return end
-            
+            -- Find the character from the item's parent
+            local character = item and item.Parent
+            if not character or not character:IsA("Model") then return end
+
+            -- Get all handled items currently on the character
+            local items = getHandledItems(character)
+            local currentText = #items > 0 and table.concat(items, ", ") or "No handled items"
+
+            -- Update your UI objects
             if objects["weapon"] and objects["holder"] then
-                objects["weapon"].Text = item.Name
+                objects["weapon"].Text = currentText
                 objects["weapon"].Parent = objects["holder"]
             end
         end
