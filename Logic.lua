@@ -274,7 +274,7 @@ local function setupCharacterTracker(player, character)
     table.insert(connections, character.DescendantRemoving:Connect(queueUpdate))
 end
 
-local statusLabel = script.Parent -- Point to your TextLabel
+
 
 local function setTrackerEnabled(enabled)
     isTracking = enabled
@@ -1094,6 +1094,10 @@ do
             
             -- Update the text label with the tool's name
             objects["weapon"].Text = "Weapon: " .. item.Name
+            local statusLabel = script.Parent -- Point to your TextLabel
+            local isInCharacter = data.info.character and data.info.character:FindFirstChild(item.Name) ~= nil
+            statusLabel.Text = "Status: " .. (isInCharacter and "ENABLED" or "DISABLED")
+            statusLabel.TextColor3 = isInCharacter and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
             
             -- Check if the tool is currently in the character's hands/inventory
             local isInCharacter = data.info.character and data.info.character:FindFirstChild(item.Name) ~= nil
