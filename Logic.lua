@@ -275,14 +275,23 @@ local function setupCharacterTracker(player, character)
 end
 
 
-
+local statusLabel = script.Parent:WaitForChild("StatusLabel") -- Change to your actual path/name
 local function setTrackerEnabled(enabled)
     isTracking = enabled
 
+    -- Safely update the status label only if it exists
+    if statusLabel then
+        if isTracking then
+            statusLabel.Text = "Status: ENABLED"
+            statusLabel.TextColor3 = Color3.fromRGB(0, 255, 0) -- Green for active
+        else
+            statusLabel.Text = "Status: DISABLED"
+            statusLabel.TextColor3 = Color3.fromRGB(255, 0, 0) -- Red for disabled
+        end
+    end
+
     if isTracking then
-        statusLabel.Text = "Status: ENABLED"
-        statusLabel.TextColor3 = Color3.fromRGB(0, 255, 0) -- Green for active
-        
+        print("--- See Holder: ENABLED ---")
         for _, player in ipairs(Players:GetPlayers()) do
             if player.Character then
                 setupCharacterTracker(player, player.Character)
@@ -302,9 +311,7 @@ local function setTrackerEnabled(enabled)
             end))
         end))
     else
-        statusLabel.Text = "Status: DISABLED"
-        statusLabel.TextColor3 = Color3.fromRGB(255, 0, 0) -- Red for disabled
-        
+        print("--- See Holder: DISABLED ---")
         for _, conn in ipairs(connections) do
             conn:Disconnect()
         end
@@ -312,7 +319,6 @@ local function setTrackerEnabled(enabled)
         lastPrintedState = {}
     end
 end
-
 ------------------
 -- World ESP
 ------------------
