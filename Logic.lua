@@ -1089,17 +1089,20 @@ do
             objects["healthbar"].BackgroundColor3 = color
         end
 
+        -- Initialize the data table first so it's not nil
+        local data = data or {}
+
+        -- Your tool added function
         data.tool_added = function(item)
             if not item:IsA("Tool") then return end
             
-            -- Update the text label with the tool's name correctly
-            objects["weapon"].Text = "Weapon: " .. item.Name
+            print("Tool added detected:", item.Name)
             
-            -- Check if the tool is currently in the character's hands/inventory
-            local isInCharacter = data.info.character and data.info.character:FindFirstChild(item.Name) ~= nil
+            objects["weapon"].Text = item.Name
             
-            -- Control whether the UI object is parented to your holder frame or hidden in cache
-            if espFlags["Weapon"] and isInCharacter then
+            local exists = data.info and data.info.character and data.info.character:FindFirstChild(item.Name)
+            
+            if espFlags["Weapon"] and exists then
                 objects["weapon"].Parent = objects["holder"]
             else
                 objects["weapon"].Parent = esp.cache
