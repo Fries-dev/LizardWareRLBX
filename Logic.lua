@@ -768,10 +768,6 @@ local bones = {
     {"LeftUpperLeg", "LeftLowerLeg"},
     {"RightUpperLeg", "RightLowerLeg"},
 }
-local objects = {
-    ["holder"] = script.Parent:WaitForChild("Holder"),
-    ["weapon"] = script.Parent:WaitForChild("Holder"):WaitForChild("WeaponLabel")
-}
 local espFlags = {
     ["Enabled"] = true,
     ["Names"] = true,
