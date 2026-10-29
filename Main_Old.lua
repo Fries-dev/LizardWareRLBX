@@ -422,7 +422,32 @@ PlayerEspSection:AddSlider({
         Logic.setBoxYOffset(value)
     end
 })
+PlayerEspSection:AddToggle({
+    Name = "Visibility Check (Green = Visible, Red = Hidden)",
+    Flag = "Vis_Check_Toggle",
+    Value = true,
+    Callback = function(enabled)
+        Logic.setVisibilityCheck(enabled)
+    end
+})
 
+PlayerEspSection:AddColorPicker({
+    Name = "Visible Color",
+    Flag = "Vis_Color_Visible",
+    Value = Color3.fromRGB(0, 255, 80),
+    Callback = function(color)
+        Logic.setVisibleColor(color)
+    end
+})
+
+PlayerEspSection:AddColorPicker({
+    Name = "Hidden Color",
+    Flag = "Vis_Color_Hidden",
+    Value = Color3.fromRGB(255, 40, 40),
+    Callback = function(color)
+        Logic.setHiddenColor(color)
+    end
+})
 PlayerEspSection:AddToggle({
     Name = "Team Check (ESP + Aim)",
     Flag = "Team_Check_Toggle",
