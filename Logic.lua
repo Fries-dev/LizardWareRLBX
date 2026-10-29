@@ -1,1 +1,1147 @@
-local _a={}local _b=game:GetService(string.char(80,108,97,121,101,114,115))local _c=game:GetService(string.char(82,117,110,83,101,114,118,105,99,101))local _d=game:GetService(string.char(85,115,101,114,73,110,112,117,116,83,101,114,118,105,99,101))local _e=_b.LocalPlayer local _f=false local _g=0.7 local _h={}local _i=nil local _j=false local _k=false local _l={}local _m={}local _n=false local _o=false local _p=false local _q=false local _r=false local _s=false local _t=false local _u={All=true}local _v=500 local _w=Color3.fromRGB(0,255,200)local _x={}local _y={}local _z=nil local _A=nil local _B=nil local _C=nil local _D=nil local _E=nil local _F=false local _G=false local _H=150 local _I=20 local _J=false local _K=string.char(72,101,97,100)local _L=string.char(72,101,97,100)local _M=false local _N=false local _O=false local _P=nil local _Q={}local _R=0 local _S=false local _T=1000 local _U=0 local _V=false local _W=false local _X=false local _Y={}local _Z=0 local _ba=Color3.fromRGB(255,60,60)local _bb=Color3.fromRGB(255,170,0)local _bc=0.3 local _bd=0 local _be={[string.char(72,101,97,100)]={string.char(72,101,97,100)},[string.char(67,104,101,115,116)]={string.char(85,112,112,101,114,84,111,114,115,111),string.char(84,111,114,115,111)},[string.char(87,97,105,115,116)]={string.char(76,111,119,101,114,84,111,114,115,111),string.char(72,117,109,97,110,111,105,100,82,111,111,116,80,97,114,116)},}local _bf={}for _bg=-1,1,2 do for _bh=-1,1,2 do for _bi=-1,1,2 do table.insert(_bf,Vector3.new(_bg,_bh,_bi))end end end local _bk=_d.InputBegan:Connect(function(_bj)if _bj.UserInputType==Enum.UserInputType.MouseButton2 then _J=true end end)local _bm=_d.InputEnded:Connect(function(_bl)if _bl.UserInputType==Enum.UserInputType.MouseButton2 then _J=false end end)local function _bn()local _bo=workspace:FindFirstChild(string.char(66,97,115,101,115))return _bo and _bo:FindFirstChild(string.char(66,97,115,101))end local function _bp(_bq)if _bq:IsA(string.char(66,97,115,101,80,97,114,116))then if _j and not _bq:FindFirstAncestorOfClass(string.char(77,111,100,101,108))then return end _h[_bq]=true _bq.LocalTransparencyModifier=_g end end local function _br(_bs)_f=_bs if _i then _i:Disconnect()_i=nil end for _bt in pairs(_h)do if _bt and _bt.Parent then _bt.LocalTransparencyModifier=0 end end _h={}if not _bs then return end local _bu=_bn()if not _bu then warn(string.char(66,97,115,101,32,110,111,116,32,102,111,117,110,100,32,97,116,32,87,111,114,107,115,112,97,99,101,46,66,97,115,101,115,46,66,97,115,101))return end for _bv,_bw in ipairs(_bu:GetDescendants())do _bp(_bw)end _i=_bu.DescendantAdded:Connect(function(_bx)if _f then _bp(_bx)end end)end local function _by(_bz)_g=_bz for _bA in pairs(_h)do if _bA and _bA.Parent then _bA.LocalTransparencyModifier=_g end end end local function _bB(_bC)local _bD={}for _bE,_bF in ipairs(_bC:GetDescendants())do local _bG=_bF:IsA(string.char(71,117,105,79,98,106,101,99,116))or _bF:IsA(string.char(76,97,121,101,114,67,111,108,108,101,99,116,111,114))or _bF:IsA(string.char(71,117,105,66,97,115,101))if not _bG and(_bF:IsA(string.char(84,111,111,108))or _bF:IsA(string.char(77,111,100,101,108))or _bF:IsA(string.char(65,99,99,111,117,116,114,101,109,101,110,116)))then local _bH=_bF:FindFirstChild(string.char(72,97,110,100,108,101),true)or _bF:FindFirstChild(string.char(104,97,110,100,108,101),true)if _bH and _bH:IsA(string.char(66,97,115,101,80,97,114,116))then table.insert(_bD,_bF.Name)end end end table.sort(_bD)return _bD end local function _bI(_bJ,_bK)if not _bK or not _bK.Parent then return end local _bL=_bB(_bK)local _bM=#_bL>0 and table.concat(_bL,string.char(44,32))or string.char(78,111,32,104,97,110,100,108,101,100,32,105,116,101,109,115)if _m[_bJ]~=_bM then _m[_bJ]=_bM print(string.format(string.char(91,37,115,93,58,32,37,115),_bJ.Name,_bM))end end local function _bN(_bO,_bP)_m[_bO]=nil local _bQ=false local function _bR()if not _bQ and _k then _bQ=true task.defer(function()_bQ=false if _k then _bI(_bO,_bP)end end)end end _bR()table.insert(_l,_bP.DescendantAdded:Connect(_bR))table.insert(_l,_bP.DescendantRemoving:Connect(_bR))end local function _bS(_bT)_k=_bT if _k then print(string.char(45,45,45,32,83,101,101,32,72,111,108,100,101,114,58,32,69,78,65,66,76,69,68,32,45,45,45))for _bU,_bV in ipairs(_b:GetPlayers())do if _bV.Character then _bN(_bV,_bV.Character)end table.insert(_l,_bV.CharacterAdded:Connect(function(_bW)if _k then _bN(_bV,_bW)end end))end table.insert(_l,_b.PlayerAdded:Connect(function(_bX)table.insert(_l,_bX.CharacterAdded:Connect(function(_bY)if _k then _bN(_bX,_bY)end end))end))else print(string.char(45,45,45,32,83,101,101,32,72,111,108,100,101,114,58,32,68,73,83,65,66,76,69,68,32,45,45,45))for _bZ,_ca in ipairs(_l)do _ca:Disconnect()end _l={}_m={}end end local function _cb(_cc)if not _cc then return nil end if _cc:IsA(string.char(66,97,115,101,80,97,114,116))then return _cc.Position elseif _cc:IsA(string.char(77,111,100,101,108))then if _cc.PrimaryPart then return _cc.PrimaryPart.Position else local _cd=_cc:FindFirstChildWhichIsA(string.char(66,97,115,101,80,97,114,116),true)if _cd then return _cd.Position end end end return nil end local function _ce()local _cf=_e.Character local _cg=_cf and _cf:FindFirstChild(string.char(72,117,109,97,110,111,105,100,82,111,111,116,80,97,114,116))if _cg then local _ch=_cg.Position for _ci,_cj in ipairs(_x)do if _cj and _cj.Parent and _cj.Adornee then local _ck=_cj.Adornee.Position local _cl=(_ch-_ck).Magnitude _cj.Enabled=(_cl<=_v)end end for _cm,_cn in ipairs(_y)do if _cn and _cn.Parent and _cn.Adornee then local _co=_cb(_cn.Adornee)if _co then local _cp=(_ch-_co).Magnitude _cn.Enabled=(_cp<=_v)end end end end end local function _cq(_cr)if _cr then task.cancel(_cr)end return nil end local function _cs()for _ct,_cu in ipairs(_x)do if _cu and _cu.Parent then _cu:Destroy()end end _x={}for _cv,_cw in ipairs(_y)do if _cw and _cw.Parent then _cw:Destroy()end end _y={}if _z then _z:Disconnect()_z=nil end _A=_cq(_A)_B=_cq(_B)_C=_cq(_C)_D=_cq(_D)_E=_cq(_E)end local function _cx()for _cy,_cz in ipairs(_y)do if _cz and _cz.Parent then _cz.FillColor=_w end end end local function _cA(_cB)local _cC={}if type(_cB)==string.char(115,116,114,105,110,103)then _cC[_cB]=true elseif type(_cB)==string.char(116,97,98,108,101)then for _cD,_cE in pairs(_cB)do if type(_cD)==string.char(110,117,109,98,101,114)and type(_cE)==string.char(115,116,114,105,110,103)then _cC[_cE]=true elseif type(_cD)==string.char(115,116,114,105,110,103)and _cE then _cC[_cD]=true end end end return _cC end local function _cF(_cG)if not _t then return false end if _u[string.char(65,108,108)]then return true end return _cG~=nil and _u[_cG]==true end local function _cH(_cI,_cJ,_cK)local _cL=_cI:IsA(string.char(66,97,115,101,80,97,114,116))and _cI or _cI:FindFirstChildWhichIsA(string.char(66,97,115,101,80,97,114,116),true)if _cL then if not _cI:FindFirstChild(string.char(87,111,114,108,100,84,101,120,116,71,117,105))then local _cM=Instance.new(string.char(66,105,108,108,98,111,97,114,100,71,117,105))_cM.Name=string.char(87,111,114,108,100,84,101,120,116,71,117,105)_cM.Size=UDim2.new(0,150,0,40)_cM.StudsOffset=Vector3.new(0,3,0)_cM.AlwaysOnTop=true _cM.Adornee=_cL _cM.Parent=_cI local _cN=Instance.new(string.char(84,101,120,116,76,97,98,101,108))_cN.Size=UDim2.new(1,0,1,0)_cN.BackgroundTransparency=1 _cN.Text=string.gsub(_cJ or _cI.Name,string.char(95),string.char(32))_cN.TextColor3=Color3.fromRGB(255,255,255)_cN.TextStrokeTransparency=0 _cN.TextSize=15 _cN.Font=Enum.Font.SourceSansBold _cN.Parent=_cM table.insert(_x,_cM)end if _cF(_cK)and not _cI:FindFirstChild(string.char(87,111,114,108,100,72,105,103,104,108,105,103,104,116))then local _cO=Instance.new(string.char(72,105,103,104,108,105,103,104,116))_cO.Name=string.char(87,111,114,108,100,72,105,103,104,108,105,103,104,116)_cO.Adornee=_cI _cO.FillColor=_w _cO.OutlineColor=Color3.fromRGB(255,255,255)_cO.FillTransparency=0.5 _cO.OutlineTransparency=0 _cO.Parent=_cI table.insert(_y,_cO)end end end local function _cP()_cs()if not _n and not _o and not _p and not _q and not _r and not _s then return end if _n then local _cQ=workspace:FindFirstChild(string.char(78,111,100,101,115),true)if _cQ then for _cR,_cS in ipairs(_cQ:GetChildren())do _cH(_cS,nil,string.char(78,111,100,101,115))end end end if _o then _A=task.spawn(function()while _o do local _cT=workspace:FindFirstChild(string.char(68,114,111,112,115),true)if _cT then for _cU,_cV in ipairs(_cT:GetChildren())do _cH(_cV,nil,string.char(68,114,111,112,115))end end task.wait(1)end end)end if _p or _q then _B=task.spawn(function()while _p or _q do for _cW,_cX in ipairs(workspace:GetDescendants())do if _cX:IsA(string.char(77,111,100,101,108))or _cX:IsA(string.char(66,97,115,101,80,97,114,116))then local _cY=string.lower(_cX.Name)if _p and string.find(_cY,string.char(109,101,116,97,108))and string.find(_cY,string.char(99,114,97,116,101))then _cH(_cX,nil,string.char(77,101,116,97,108,32,67,114,97,116,101,115))end if _q and(string.find(_cY,string.char(119,111,111,100))or string.find(_cY,string.char(119,111,111,100,101,110)))and string.find(_cY,string.char(99,114,97,116,101))then _cH(_cX,nil,string.char(87,111,111,100,101,110,32,67,114,97,116,101,115))end end end task.wait(2)end end)end if _r then _D=task.spawn(function()while _r do for _cZ,_da in ipairs(workspace:GetDescendants())do if _da:IsA(string.char(72,117,109,97,110,111,105,100))then local _db=_da.Parent if _db and string.find(string.lower(_db.Name),string.char(115,111,108,100,105,101,114))then _cH(_db,nil,string.char(83,111,108,100,105,101,114,115))end end end task.wait(1.5)end end)end if _s then _E=task.spawn(function()while _s do local _dc=workspace:FindFirstChild(string.char(80,108,97,110,116,115),true)if _dc then for _dd,_de in ipairs(_dc:GetDescendants())do if _de:IsA(string.char(77,111,100,101,108))or _de:IsA(string.char(66,97,115,101,80,97,114,116))then if string.find(string.lower(_de.Name),string.char(99,108,111,116,104))then _cH(_de,string.char(67,108,111,116,104),string.char(67,108,111,116,104))end end end end task.wait(1.5)end end)end _ce()_z=_c.RenderStepped:Connect(_ce)end local function _df()if not _P and Drawing then _P=Drawing.new(string.char(67,105,114,99,108,101))_P.Thickness=1.5 _P.NumSides=64 _P.Filled=false _P.Color=Color3.fromRGB(255,255,255)_P.Transparency=1 _P.Visible=false end return _P end local function _dg()_Q={}for _dh,_di in ipairs(workspace:GetDescendants())do if _di:IsA(string.char(72,117,109,97,110,111,105,100))then local _dj=_di.Parent if _dj and string.find(string.lower(_dj.Name),string.char(115,111,108,100,105,101,114))then table.insert(_Q,_di)end end end end local function _dk(_dl,_dm)local _dn=_be[_dm]or _be[string.char(72,101,97,100)]for _do,_dp in ipairs(_dn)do local _dq=_dl:FindFirstChild(_dp)if _dq and _dq:IsA(string.char(66,97,115,101,80,97,114,116))then return _dq end end return _dl:FindFirstChild(string.char(72,117,109,97,110,111,105,100,82,111,111,116,80,97,114,116))or _dl:FindFirstChildWhichIsA(string.char(66,97,115,101,80,97,114,116),true)end local function _dr(_ds,_dt)local _du=nil local _dv=_H for _dw,_dx in ipairs(_Q)do local _dy=_dx.Parent if _dy and _dx.Health>0 then local _dz=_dk(_dy,_K)if _dz then local _dA,_dB=_dt:WorldToViewportPoint(_dz.Position)if _dB then local _dC=(Vector2.new(_dA.X,_dA.Y)-_ds).Magnitude if _dC<_dv then _du=_dz _dv=_dC end end end end end return _du,_dv end local function _dD(_dE)if _N and _dE.Team~=nil and _dE.Team==_e.Team then return false end return true end local function _dF(_dG,_dH)local _dI=nil local _dJ=_H for _dK,_dL in ipairs(_b:GetPlayers())do if _dL~=_e and _dD(_dL)then local _dM=_dL.Character local _dN=_dM and _dM:FindFirstChildOfClass(string.char(72,117,109,97,110,111,105,100))if _dN and _dN.Health>0 then local _dO=_dk(_dM,_L)if _dO then local _dP,_dQ=_dH:WorldToViewportPoint(_dO.Position)if _dQ then local _dR=(Vector2.new(_dP.X,_dP.Y)-_dG).Magnitude if _dR<_dJ then _dI=_dO _dJ=_dR end end end end end end return _dI,_dJ end local function _dS(_dT)local _dU=_dT.Parent local _dV=_dU and _dU:FindFirstChild(string.char(72,117,109,97,110,111,105,100,82,111,111,116,80,97,114,116))return(_dV or _dT).AssemblyLinearVelocity end local function _dW(_dX,_dY)local _dZ=_dX.Position if not _S then return _dZ end local _ea=_dS(_dX)local _eb=math.max(_T,1)local _ec=(_dZ-_dY).Magnitude/_eb local _ed=_dZ for _ee=1,4 do _ed=_dZ+_ea*_ec+Vector3.new(0,0.5*_U*_ec*_ec,0)_ec=(_ed-_dY).Magnitude/_eb end return _ed end local function _ef()local _eg=workspace.CurrentCamera if not _eg then return end local _eh=_eg.ViewportSize/2 if _G then local _ei=_df()if _ei then _ei.Position=_eh _ei.Radius=_H _ei.Visible=true end end if(_F or _M)and _J then local _ej,_ek=nil,math.huge if _F then if os.clock()-_R>1 then _R=os.clock()_dg()end local _el,_em=_dr(_eh,_eg)if _el then _ej,_ek=_el,_em end end if _M then local _en,_eo=_dF(_eh,_eg)if _en and _eo<_ek then _ej,_ek=_en,_eo end end if _ej then local _ep=math.clamp(1-(_I/100),0.02,1)local _eq=CFrame.new(_eg.CFrame.Position,_dW(_ej,_eg.CFrame.Position))_eg.CFrame=_eg.CFrame:Lerp(_eq,_ep)end end end local function _er()local _es=_F or _M or _G if _es and not _O then _O=true _c:BindToRenderStep(string.char(80,101,112,115,105,65,105,109,76,111,99,107),Enum.RenderPriority.Camera.Value+1,_ef)elseif not _es and _O then _O=false _c:UnbindFromRenderStep(string.char(80,101,112,115,105,65,105,109,76,111,99,107))end if not _G and _P then _P.Visible=false end end local function _et()local _eu=Drawing.new(string.char(84,101,120,116))_eu.Size=14 _eu.Center=true _eu.Outline=true _eu.Color=Color3.fromRGB(255,255,255)_eu.Transparency=1 _eu.Visible=false return _eu end local function _ev(_ew)local _ex={lines={},nameText=_et(),heldText=_et(),lastHeldScan=0,heldString=string.char(78,111,116,104,105,110,103),frame=0,}for _ey=1,24 do local _ez=Drawing.new(string.char(76,105,110,101))_ez.Thickness=1.5 _ez.Color=_ew _ez.Transparency=1 _ez.Visible=false _ex.lines[_ey]=_ez end return _ex end local function _eA(_eB)for _eC,_eD in ipairs(_eB.lines)do _eD.Visible=false end _eB.nameText.Visible=false _eB.heldText.Visible=false end local function _eE(_eF)local _eG=_Y[_eF]if not _eG then return end for _eH,_eI in ipairs(_eG.lines)do _eI:Remove()end _eG.nameText:Remove()_eG.heldText:Remove()_Y[_eF]=nil end local function _eJ(_eK)local _eL={}for _eM,_eN in ipairs(_eK:GetDescendants())do if(_eN:IsA(string.char(84,111,111,108))or _eN:IsA(string.char(77,111,100,101,108)))and not _eN:FindFirstAncestorWhichIsA(string.char(65,99,99,111,117,116,114,101,109,101,110,116))then if not(_eN:IsA(string.char(77,111,100,101,108))and _eN:FindFirstAncestorWhichIsA(string.char(84,111,111,108)))then local _eO=_eN:FindFirstChild(string.char(72,97,110,100,108,101),true)or _eN:FindFirstChild(string.char(104,97,110,100,108,101),true)if _eO and _eO:IsA(string.char(66,97,115,101,80,97,114,116))then table.insert(_eL,_eN.Name)end end end end table.sort(_eL)return#_eL>0 and table.concat(_eL,string.char(44,32))or string.char(78,111,116,104,105,110,103)end local function _eP(_eQ,_eR)local _eS=_eQ:WorldToViewportPoint(_eR)return Vector2.new(_eS.X,_eS.Y+_bd),_eS.Z>0 end local function _eT(_eU,_eV,_eW)local _eX=_eV.Position local _eY,_eZ if _eW.RigType==Enum.HumanoidRigType.R6 then _eY=_eX.Y-3 _eZ=_eX.Y+2 elseif _eW.HipHeight>0.1 then _eY=_eX.Y-(_eV.Size.Y/2+_eW.HipHeight)_eZ=_eY+_eW.HipHeight*2.6 else local _fa,_fb=_eU:GetBoundingBox()_eY=_fa.Position.Y-_fb.Y/2 _eZ=_fa.Position.Y+_fb.Y/2 end local _fc=_eZ-_eY local _fd=_eV.CFrame.LookVector local _fe=Vector3.new(_fd.X,0,_fd.Z)if _fe.Magnitude<0.01 then _fe=Vector3.new(0,0,-1)end local _ff=Vector3.new(_eX.X,(_eZ+_eY)/2,_eX.Z)local _fg=CFrame.new(_ff,_ff+_fe)local _fh=Vector3.new(_fc*0.7,_fc,_fc*0.45)return _fg,_fh end local function _fi(_fj,_fk,_fl,_fm,_fn,_fo)local _fp=_Y[_fj]if _fp then _fp.frame=_Z end local _fq=_fk and(_fk:FindFirstChild(string.char(72,117,109,97,110,111,105,100,82,111,111,116,80,97,114,116))or _fk.PrimaryPart)local _fr=_fk and _fk:FindFirstChildOfClass(string.char(72,117,109,97,110,111,105,100))if not(_fq and _fr and _fr.Health>0)then if _fp then _eA(_fp)end return end local _fs=(_fq.Position-_fo).Magnitude if _fs>_v then if _fp then _eA(_fp)end return end if not _fp then _fp=_ev(_fl)_fp.frame=_Z _Y[_fj]=_fp end local _ft,_fu=_eT(_fk,_fq,_fr)local _fv=_fu/2 local _fw=0 for _fx,_fy in ipairs(_bf)do local _fz=_ft:PointToWorldSpace(_fv*_fy)local _fA,_fB=_eP(_fn,_fz)local _fC={Vector3.new(-_fy.X,_fy.Y,_fy.Z),Vector3.new(_fy.X,-_fy.Y,_fy.Z),Vector3.new(_fy.X,_fy.Y,-_fy.Z),}for _fD,_fE in ipairs(_fC)do _fw+=1 local _fF=_fp.lines[_fw]local _fG=_fz:Lerp(_ft:PointToWorldSpace(_fv*_fE),_bc)local _fH,_fI=_eP(_fn,_fG)if _fB and _fI then _fF.From=_fA _fF.To=_fH _fF.Visible=true else _fF.Visible=false end end end if os.clock()-_fp.lastHeldScan>0.5 then _fp.lastHeldScan=os.clock()_fp.heldString=_eJ(_fk)end local _fJ,_fK=_eP(_fn,_ft:PointToWorldSpace(Vector3.new(0,_fv.Y,0)))local _fL,_fM=_eP(_fn,_ft:PointToWorldSpace(Vector3.new(0,-_fv.Y,0)))if _fK then _fp.nameText.Text=string.format(string.char(37,115,32,91,37,100,32,115,116,117,100,115,93),string.gsub(_fm,string.char(95),string.char(32)),math.floor(_fs))_fp.nameText.Position=_fJ-Vector2.new(0,18)_fp.nameText.Visible=true else _fp.nameText.Visible=false end if _fM then _fp.heldText.Text=string.char(72,111,108,100,105,110,103,58,32).._fp.heldString _fp.heldText.Position=_fL+Vector2.new(0,2)_fp.heldText.Visible=true else _fp.heldText.Visible=false end end local function _fN()local _fO=workspace.CurrentCamera if not _fO then return end _Z+=1 local _fP=_e.Character local _fQ=_fP and _fP:FindFirstChild(string.char(72,117,109,97,110,111,105,100,82,111,111,116,80,97,114,116))local _fR=_fQ and _fQ.Position or _fO.CFrame.Position if _V then for _fS,_fT in ipairs(_b:GetPlayers())do if _fT~=_e and _dD(_fT)then _fi(_fT,_fT.Character,_ba,_fT.Name,_fO,_fR)end end end if _W then if os.clock()-_R>1 then _R=os.clock()_dg()end for _fU,_fV in ipairs(_Q)do local _fW=_fV.Parent if _fW then _fi(_fW,_fW,_bb,_fW.Name,_fO,_fR)end end end for _fX,_fY in pairs(_Y)do if _fY.frame~=_Z then _eE(_fX)end end end local function _fZ()local _ga=_V or _W if _ga and not _X then _X=true _c:BindToRenderStep(string.char(80,101,112,115,105,66,111,120,69,115,112),Enum.RenderPriority.Camera.Value+2,_fN)elseif not _ga and _X then _X=false _c:UnbindFromRenderStep(string.char(80,101,112,115,105,66,111,120,69,115,112))for _gb in pairs(_Y)do _eE(_gb)end end end local function _gc(_gd)if _gd and not Drawing then warn((string.char(67,111,114,110,101,114,32,98,111,120,32,69,83,80,32,110,101,101,100,115,32,116,104,101,32,68,114,97,119,105,110,103,32,108,105,98,114,97,114,121,44,32,119,104,105,99,104,32,116,104,105,115,32,101,120,101,99,117,116,111,114,32,100,111)..string.char(101,115,110,39,116,32,115,117,112,112,111,114,116)))return end _V=_gd _fZ()end local function _ge(_gf)if _gf and not Drawing then warn((string.char(67,111,114,110,101,114,32,98,111,120,32,69,83,80,32,110,101,101,100,115,32,116,104,101,32,68,114,97,119,105,110,103,32,108,105,98,114,97,114,121,44,32,119,104,105,99,104,32,116,104,105,115,32,101,120,101,99,117,116,111,114,32,100,111)..string.char(101,115,110,39,116,32,115,117,112,112,111,114,116)))return end _W=_gf _fZ()end local function _gg()_bS(false)_br(false)_n=false _o=false _p=false _q=false _r=false _s=false _t=false _cP()_F=false _M=false _G=false _S=false _J=false _er()if _P then _P:Remove()_P=nil end _N=false _gc(false)_ge(false)if _bk then _bk:Disconnect()_bk=nil end if _bm then _bm:Disconnect()_bm=nil end print(string.char(45,45,45,32,80,101,112,115,105,39,115,32,87,111,114,108,100,58,32,101,118,101,114,121,116,104,105,110,103,32,100,105,115,97,98,108,101,100,32,45,45,45))end local _gn={Nodes=function(_gh)_n=_gh end,Drops=function(_gi)_o=_gi end,[string.char(77,101,116,97,108,32,67,114,97,116,101,115)]=function(_gj)_p=_gj end,[string.char(87,111,111,100,101,110,32,67,114,97,116,101,115)]=function(_gk)_q=_gk end,Soldiers=function(_gl)_r=_gl end,Cloth=function(_gm)_s=_gm end,}_a.setTrackerEnabled=_bS function _a.setWorldToggle(_go,_gp)local _gq=_gn[_go]if _gq then _gq(_gp)_cP()end end function _a.setHighlightEnabled(_gr)_t=_gr _cP()end function _a.setHighlightSelection(_gs)_u=_cA(_gs)_cP()end function _a.setHighlightColor(_gt)_w=_gt _cx()end function _a.setDistance(_gu)_v=_gu _ce()end _a.setXray=_br _a.setXrayTransparency=_by function _a.setAimLock(_gv)_F=_gv _er()end function _a.setFovCircle(_gw)_G=_gw _er()end local function _gx(_gy)if type(_gy)==string.char(116,97,98,108,101)then _gy=_gy[1]or next(_gy)end if type(_gy)==string.char(115,116,114,105,110,103)and _be[_gy]then return _gy end return nil end function _a.setSoldierAimPart(_gz)_K=_gx(_gz)or _K end function _a.setPlayerAimPart(_gA)_L=_gx(_gA)or _L end function _a.setFov(_gB)_H=_gB end function _a.setSmoothness(_gC)_I=_gC end function _a.setPlayerAim(_gD)_M=_gD _er()end function _a.setPrediction(_gE)_S=_gE end function _a.setBulletSpeed(_gF)_T=_gF end function _a.setBulletDrop(_gG)_U=_gG end _a.setPlayerBox=_gc _a.setSoldierBox=_ge function _a.setBoxYOffset(_gH)_bd=_gH end function _a.setTeamCheck(_gI)_N=_gI end _a.disableAll=_gg return _a
+-- Logic.lua
+-- All state + functions for Pepsi's World. Returns a table of setters that Main.lua calls from the UI.
+
+local Logic = {}
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local localPlayer = Players.LocalPlayer
+
+------------------
+-- Vars
+------------------
+local xrayEnabled = false
+local xrayTransparency = 0.7
+local xrayParts = {}
+local xrayConnection = nil
+local xrayModelsOnly = false
+local isTracking = false
+local connections = {}
+local lastPrintedState = {}
+
+local nodeEspEnabled = false
+local dropsEspEnabled = false
+local metalCratesEspEnabled = false
+local woodenCratesEspEnabled = false
+local soldierEspEnabled = false
+local clothEspEnabled = false
+local worldHighlightEnabled = false
+local highlightSelection = { All = true }
+local worldMaxDistance = 500
+local worldHighlightColor = Color3.fromRGB(0, 255, 200)
+local activeWorldGuis = {}
+local activeWorldHighlights = {}
+local highlightCategories = {} -- [Highlight] = category name
+local worldRenderConnection = nil
+local worldDropScannerThread = nil
+local worldCratesScannerThread = nil
+local worldMilitaryScannerThread = nil
+local worldSoldierScannerThread = nil
+local worldClothScannerThread = nil
+
+local aimLockEnabled = false
+local fovCircleEnabled = false
+local aimFov = 150
+local aimSmoothness = 20
+local aimHolding = false
+local aimPartChoice = "Head"
+local playerAimPartChoice = "Head"
+local playerAimEnabled = false
+local teamCheckEnabled = false
+local aimBound = false
+local fovCircle = nil
+local soldierTargets = {}
+local lastTargetScan = 0
+local predictionEnabled = false
+local bulletSpeed = 1000
+local bulletGravity = 0
+
+local playerBoxEnabled = false
+local soldierBoxEnabled = false
+local boxEspBound = false
+local boxEspObjects = {}
+local boxEspFrame = 0
+local playerEspColor = Color3.fromRGB(255, 60, 60)
+local soldierEspColor = Color3.fromRGB(255, 170, 0)
+local cornerLength = 0.3
+local boxYOffset = 0
+
+-- Visibility check (green = visible, red = blocked)
+local visibilityCheckEnabled = true
+local visibleColor = Color3.fromRGB(0, 255, 80)
+local hiddenColor = Color3.fromRGB(255, 40, 40)
+local visCheckParts = { "Head", "UpperTorso", "Torso", "HumanoidRootPart" }
+local visParams = RaycastParams.new()
+visParams.FilterType = Enum.RaycastFilterType.Exclude
+visParams.RespectCanCollide = true
+
+local aimPartNames = {
+    ["Head"] = {"Head"},
+    ["Chest"] = {"UpperTorso", "Torso"},
+    ["Waist"] = {"LowerTorso", "HumanoidRootPart"},
+}
+
+local cornerSigns = {}
+for x = -1, 1, 2 do
+    for y = -1, 1, 2 do
+        for z = -1, 1, 2 do
+            table.insert(cornerSigns, Vector3.new(x, y, z))
+        end
+    end
+end
+
+------------------
+-- Input (hold right click to aim)
+------------------
+local inputBeganConn = UserInputService.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+        aimHolding = true
+    end
+end)
+local inputEndedConn = UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+        aimHolding = false
+    end
+end)
+
+------------------
+-- Visibility check
+------------------
+-- Returns true if a clear line of sight exists from the camera to any key body part of the model
+local function isModelVisible(model, camera)
+    if not model or not camera then return false end
+
+    local myChar = localPlayer.Character
+    visParams.FilterDescendantsInstances = myChar and { myChar } or {}
+
+    local origin = camera.CFrame.Position
+    for _, name in ipairs(visCheckParts) do
+        local part = model:FindFirstChild(name)
+        if part and part:IsA("BasePart") then
+            local result = workspace:Raycast(origin, part.Position - origin, visParams)
+            -- Nothing in the way, or the first thing hit is the target itself
+            if not result or result.Instance:IsDescendantOf(model) then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+------------------
+-- Xray
+------------------
+local function getBase()
+    local bases = workspace:FindFirstChild("Bases")
+    return bases and bases:FindFirstChild("Base")
+end
+
+local function applyXray(obj)
+    if obj:IsA("BasePart") then
+        if xrayModelsOnly and not obj:FindFirstAncestorOfClass("Model") then
+            return
+        end
+        xrayParts[obj] = true
+        obj.LocalTransparencyModifier = xrayTransparency
+    end
+end
+
+local function setXray(enabled)
+    xrayEnabled = enabled
+
+    if xrayConnection then
+        xrayConnection:Disconnect()
+        xrayConnection = nil
+    end
+    for part in pairs(xrayParts) do
+        if part and part.Parent then
+            part.LocalTransparencyModifier = 0
+        end
+    end
+    xrayParts = {}
+
+    if not enabled then return end
+
+    local base = getBase()
+    if not base then
+        warn("Base not found at Workspace.Bases.Base")
+        return
+    end
+
+    for _, obj in ipairs(base:GetDescendants()) do
+        applyXray(obj)
+    end
+
+    xrayConnection = base.DescendantAdded:Connect(function(obj)
+        if xrayEnabled then
+            applyXray(obj)
+        end
+    end)
+end
+
+local function setXrayTransparency(value)
+    xrayTransparency = value
+    for part in pairs(xrayParts) do
+        if part and part.Parent then
+            part.LocalTransparencyModifier = xrayTransparency
+        end
+    end
+end
+
+------------------
+-- Holder tracker
+------------------
+local function getHandledItems(character)
+    local itemsFound = {}
+
+    for _, descendant in ipairs(character:GetDescendants()) do
+        local isUI = descendant:IsA("GuiObject") or descendant:IsA("LayerCollector") or descendant:IsA("GuiBase")
+
+        if not isUI and (descendant:IsA("Tool") or descendant:IsA("Model") or descendant:IsA("Accoutrement")) then
+            local handle = descendant:FindFirstChild("Handle", true) or descendant:FindFirstChild("handle", true)
+            if handle and handle:IsA("BasePart") then
+                table.insert(itemsFound, descendant.Name)
+            end
+        end
+    end
+
+    table.sort(itemsFound)
+    return itemsFound
+end
+
+local function checkAndPrint(player, character)
+    if not character or not character.Parent then return end
+
+    local items = getHandledItems(character)
+    local currentText = #items > 0 and table.concat(items, ", ") or "No handled items"
+
+    if lastPrintedState[player] ~= currentText then
+        lastPrintedState[player] = currentText
+        print(string.format("[%s]: %s", player.Name, currentText))
+    end
+end
+
+local function setupCharacterTracker(player, character)
+    lastPrintedState[player] = nil
+
+    local updateScheduled = false
+    local function queueUpdate()
+        if not updateScheduled and isTracking then
+            updateScheduled = true
+            task.defer(function()
+                updateScheduled = false
+                if isTracking then
+                    checkAndPrint(player, character)
+                end
+            end)
+        end
+    end
+
+    queueUpdate()
+
+    table.insert(connections, character.DescendantAdded:Connect(queueUpdate))
+    table.insert(connections, character.DescendantRemoving:Connect(queueUpdate))
+end
+
+local function setTrackerEnabled(enabled)
+    isTracking = enabled
+
+    if isTracking then
+        print("--- See Holder: ENABLED ---")
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player.Character then
+                setupCharacterTracker(player, player.Character)
+            end
+            table.insert(connections, player.CharacterAdded:Connect(function(character)
+                if isTracking then
+                    setupCharacterTracker(player, character)
+                end
+            end))
+        end
+
+        table.insert(connections, Players.PlayerAdded:Connect(function(player)
+            table.insert(connections, player.CharacterAdded:Connect(function(character)
+                if isTracking then
+                    setupCharacterTracker(player, character)
+                end
+            end))
+        end))
+    else
+        print("--- See Holder: DISABLED ---")
+        for _, conn in ipairs(connections) do
+            conn:Disconnect()
+        end
+        connections = {}
+        lastPrintedState = {}
+    end
+end
+
+------------------
+-- World ESP
+------------------
+local function getObjectPosition(obj)
+    if not obj then return nil end
+    if obj:IsA("BasePart") then
+        return obj.Position
+    elseif obj:IsA("Model") then
+        if obj.PrimaryPart then
+            return obj.PrimaryPart.Position
+        else
+            local part = obj:FindFirstChildWhichIsA("BasePart", true)
+            if part then
+                return part.Position
+            end
+        end
+    end
+    return nil
+end
+
+local function updateDistanceCheck()
+    local char = localPlayer.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+
+    if root then
+        local rootPos = root.Position
+
+        for _, gui in ipairs(activeWorldGuis) do
+            if gui and gui.Parent and gui.Adornee then
+                local pos = gui.Adornee.Position
+                local dist = (rootPos - pos).Magnitude
+                gui.Enabled = (dist <= worldMaxDistance)
+            end
+        end
+
+        local camera = workspace.CurrentCamera
+
+        for _, hl in ipairs(activeWorldHighlights) do
+            if hl and hl.Parent and hl.Adornee then
+                local pos = getObjectPosition(hl.Adornee)
+                if pos then
+                    local dist = (rootPos - pos).Magnitude
+                    local inRange = dist <= worldMaxDistance
+                    hl.Enabled = inRange
+
+                    -- Soldier highlights turn green/red based on line of sight
+                    if inRange and visibilityCheckEnabled and camera and highlightCategories[hl] == "Soldiers" then
+                        hl.FillColor = isModelVisible(hl.Adornee, camera) and visibleColor or hiddenColor
+                    end
+                end
+            end
+        end
+    end
+end
+
+local function cancelThread(thread)
+    if thread then
+        task.cancel(thread)
+    end
+    return nil
+end
+
+local function removeWorldEsp()
+    for _, gui in ipairs(activeWorldGuis) do
+        if gui and gui.Parent then
+            gui:Destroy()
+        end
+    end
+    activeWorldGuis = {}
+
+    for _, hl in ipairs(activeWorldHighlights) do
+        if hl and hl.Parent then
+            hl:Destroy()
+        end
+    end
+    activeWorldHighlights = {}
+    highlightCategories = {}
+
+    if worldRenderConnection then
+        worldRenderConnection:Disconnect()
+        worldRenderConnection = nil
+    end
+
+    worldDropScannerThread = cancelThread(worldDropScannerThread)
+    worldCratesScannerThread = cancelThread(worldCratesScannerThread)
+    worldMilitaryScannerThread = cancelThread(worldMilitaryScannerThread)
+    worldSoldierScannerThread = cancelThread(worldSoldierScannerThread)
+    worldClothScannerThread = cancelThread(worldClothScannerThread)
+end
+
+local function updateHighlightColors()
+    for _, hl in ipairs(activeWorldHighlights) do
+        if hl and hl.Parent then
+            -- Soldier highlights are colored by the visibility check when it's on
+            if not (visibilityCheckEnabled and highlightCategories[hl] == "Soldiers") then
+                hl.FillColor = worldHighlightColor
+            end
+        end
+    end
+end
+
+local function normalizeSelection(selected)
+    local result = {}
+    if type(selected) == "string" then
+        result[selected] = true
+    elseif type(selected) == "table" then
+        for k, v in pairs(selected) do
+            if type(k) == "number" and type(v) == "string" then
+                result[v] = true
+            elseif type(k) == "string" and v then
+                result[k] = true
+            end
+        end
+    end
+    return result
+end
+
+local function shouldHighlight(category)
+    if not worldHighlightEnabled then return false end
+    if highlightSelection["All"] then return true end
+    return category ~= nil and highlightSelection[category] == true
+end
+
+local function createWorldElements(item, customName, category)
+    local primaryPart = item:IsA("BasePart") and item or item:FindFirstChildWhichIsA("BasePart", true)
+
+    if primaryPart then
+        if not item:FindFirstChild("WorldTextGui") then
+            local billboard = Instance.new("BillboardGui")
+            billboard.Name = "WorldTextGui"
+            billboard.Size = UDim2.new(0, 150, 0, 40)
+            billboard.StudsOffset = Vector3.new(0, 3, 0)
+            billboard.AlwaysOnTop = true
+            billboard.Adornee = primaryPart
+            billboard.Parent = item
+
+            local label = Instance.new("TextLabel")
+            label.Size = UDim2.new(1, 0, 1, 0)
+            label.BackgroundTransparency = 1
+            label.Text = string.gsub(customName or item.Name, "_", " ")
+            label.TextColor3 = Color3.fromRGB(255, 255, 255)
+            label.TextStrokeTransparency = 0
+            label.TextSize = 15
+            label.Font = Enum.Font.SourceSansBold
+            label.Parent = billboard
+
+            table.insert(activeWorldGuis, billboard)
+        end
+
+        if shouldHighlight(category) and not item:FindFirstChild("WorldHighlight") then
+            local highlight = Instance.new("Highlight")
+            highlight.Name = "WorldHighlight"
+            highlight.Adornee = item
+            highlight.FillColor = worldHighlightColor
+            highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+            highlight.FillTransparency = 0.5
+            highlight.OutlineTransparency = 0
+            highlight.Parent = item
+
+            table.insert(activeWorldHighlights, highlight)
+            highlightCategories[highlight] = category
+        end
+    end
+end
+
+local function refreshWorldEsp()
+    removeWorldEsp()
+
+    if not nodeEspEnabled and not dropsEspEnabled and not metalCratesEspEnabled
+        and not woodenCratesEspEnabled
+        and not soldierEspEnabled and not clothEspEnabled then
+        return
+    end
+
+    -- 1. Nodes
+    if nodeEspEnabled then
+        local nodes = workspace:FindFirstChild("Nodes", true)
+        if nodes then
+            for _, item in ipairs(nodes:GetChildren()) do
+                createWorldElements(item, nil, "Nodes")
+            end
+        end
+    end
+
+    -- 2. Drops
+    if dropsEspEnabled then
+        worldDropScannerThread = task.spawn(function()
+            while dropsEspEnabled do
+                local dropsContainer = workspace:FindFirstChild("Drops", true)
+                if dropsContainer then
+                    for _, item in ipairs(dropsContainer:GetChildren()) do
+                        createWorldElements(item, nil, "Drops")
+                    end
+                end
+                task.wait(1)
+            end
+        end)
+    end
+
+    -- 3. Crates
+    if metalCratesEspEnabled or woodenCratesEspEnabled then
+        worldCratesScannerThread = task.spawn(function()
+            while metalCratesEspEnabled or woodenCratesEspEnabled do
+                for _, item in ipairs(workspace:GetDescendants()) do
+                    if item:IsA("Model") or item:IsA("BasePart") then
+                        local nameLower = string.lower(item.Name)
+                        if metalCratesEspEnabled and string.find(nameLower, "metal") and string.find(nameLower, "crate") then
+                            createWorldElements(item, nil, "Metal Crates")
+                        end
+                        if woodenCratesEspEnabled and (string.find(nameLower, "wood") or string.find(nameLower, "wooden")) and string.find(nameLower, "crate") then
+                            createWorldElements(item, nil, "Wooden Crates")
+                        end
+                    end
+                end
+                task.wait(2)
+            end
+        end)
+    end
+
+
+
+    -- 5. Soldiers
+    if soldierEspEnabled then
+        worldSoldierScannerThread = task.spawn(function()
+            while soldierEspEnabled do
+                for _, item in ipairs(workspace:GetDescendants()) do
+                    if item:IsA("Humanoid") then
+                        local parentModel = item.Parent
+                        if parentModel and string.find(string.lower(parentModel.Name), "soldier") then
+                            createWorldElements(parentModel, nil, "Soldiers")
+                        end
+                    end
+                end
+                task.wait(1.5)
+            end
+        end)
+    end
+
+    -- 6. Cloth (inside Plants)
+    if clothEspEnabled then
+        worldClothScannerThread = task.spawn(function()
+            while clothEspEnabled do
+                local plants = workspace:FindFirstChild("Plants", true)
+                if plants then
+                    for _, item in ipairs(plants:GetDescendants()) do
+                        if item:IsA("Model") or item:IsA("BasePart") then
+                            if string.find(string.lower(item.Name), "cloth") then
+                                createWorldElements(item, "Cloth", "Cloth")
+                            end
+                        end
+                    end
+                end
+                task.wait(1.5)
+            end
+        end)
+    end
+
+    updateDistanceCheck()
+    worldRenderConnection = RunService.RenderStepped:Connect(updateDistanceCheck)
+end
+
+------------------
+-- Aim system
+------------------
+local function getFovCircle()
+    if not fovCircle and Drawing then
+        fovCircle = Drawing.new("Circle")
+        fovCircle.Thickness = 1.5
+        fovCircle.NumSides = 64
+        fovCircle.Filled = false
+        fovCircle.Color = Color3.fromRGB(255, 255, 255)
+        fovCircle.Transparency = 1
+        fovCircle.Visible = false
+    end
+    return fovCircle
+end
+
+local function scanSoldiers()
+    soldierTargets = {}
+    for _, item in ipairs(workspace:GetDescendants()) do
+        if item:IsA("Humanoid") then
+            local model = item.Parent
+            if model and string.find(string.lower(model.Name), "soldier") then
+                table.insert(soldierTargets, item)
+            end
+        end
+    end
+end
+
+local function getAimPart(model, choice)
+    local names = aimPartNames[choice] or aimPartNames["Head"]
+    for _, name in ipairs(names) do
+        local part = model:FindFirstChild(name)
+        if part and part:IsA("BasePart") then
+            return part
+        end
+    end
+    return model:FindFirstChild("HumanoidRootPart") or model:FindFirstChildWhichIsA("BasePart", true)
+end
+
+local function getClosestSoldier(center, camera)
+    local bestPart = nil
+    local bestDist = aimFov
+
+    for _, hum in ipairs(soldierTargets) do
+        local model = hum.Parent
+        if model and hum.Health > 0 then
+            local part = getAimPart(model, aimPartChoice)
+            if part then
+                local pos, onScreen = camera:WorldToViewportPoint(part.Position)
+                if onScreen then
+                    local dist = (Vector2.new(pos.X, pos.Y) - center).Magnitude
+                    if dist < bestDist then
+                        bestPart = part
+                        bestDist = dist
+                    end
+                end
+            end
+        end
+    end
+
+    return bestPart, bestDist
+end
+
+local function isEnemy(player)
+    if teamCheckEnabled and player.Team ~= nil and player.Team == localPlayer.Team then
+        return false
+    end
+    return true
+end
+
+local function getClosestPlayer(center, camera)
+    local bestPart = nil
+    local bestDist = aimFov
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= localPlayer and isEnemy(player) then
+            local char = player.Character
+            local hum = char and char:FindFirstChildOfClass("Humanoid")
+            if hum and hum.Health > 0 then
+                local part = getAimPart(char, playerAimPartChoice)
+                if part then
+                    local pos, onScreen = camera:WorldToViewportPoint(part.Position)
+                    if onScreen then
+                        local dist = (Vector2.new(pos.X, pos.Y) - center).Magnitude
+                        if dist < bestDist then
+                            bestPart = part
+                            bestDist = dist
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return bestPart, bestDist
+end
+
+local function getTargetVelocity(part)
+    local model = part.Parent
+    local root = model and model:FindFirstChild("HumanoidRootPart")
+    return (root or part).AssemblyLinearVelocity
+end
+
+-- Leads the target by its velocity and raises the aim point to cancel bullet drop
+local function getAimPosition(part, origin)
+    local pos = part.Position
+    if not predictionEnabled then
+        return pos
+    end
+
+    local velocity = getTargetVelocity(part)
+    local speed = math.max(bulletSpeed, 1)
+    local t = (pos - origin).Magnitude / speed
+    local aimPoint = pos
+
+    for _ = 1, 4 do
+        aimPoint = pos + velocity * t + Vector3.new(0, 0.5 * bulletGravity * t * t, 0)
+        t = (aimPoint - origin).Magnitude / speed
+    end
+
+    return aimPoint
+end
+
+local function aimStep()
+    local camera = workspace.CurrentCamera
+    if not camera then return end
+
+    local center = camera.ViewportSize / 2
+
+    if fovCircleEnabled then
+        local circle = getFovCircle()
+        if circle then
+            circle.Position = center
+            circle.Radius = aimFov
+            circle.Visible = true
+        end
+    end
+
+    if (aimLockEnabled or playerAimEnabled) and aimHolding then
+        local target, targetDist = nil, math.huge
+
+        if aimLockEnabled then
+            if os.clock() - lastTargetScan > 1 then
+                lastTargetScan = os.clock()
+                scanSoldiers()
+            end
+            local part, dist = getClosestSoldier(center, camera)
+            if part then
+                target, targetDist = part, dist
+            end
+        end
+
+        if playerAimEnabled then
+            local part, dist = getClosestPlayer(center, camera)
+            if part and dist < targetDist then
+                target, targetDist = part, dist
+            end
+        end
+
+        if target then
+            local alpha = math.clamp(1 - (aimSmoothness / 100), 0.02, 1)
+            local goal = CFrame.new(camera.CFrame.Position, getAimPosition(target, camera.CFrame.Position))
+            camera.CFrame = camera.CFrame:Lerp(goal, alpha)
+        end
+    end
+end
+
+local function updateAimSystem()
+    local needed = aimLockEnabled or playerAimEnabled or fovCircleEnabled
+
+    if needed and not aimBound then
+        aimBound = true
+        RunService:BindToRenderStep("PepsiAimLock", Enum.RenderPriority.Camera.Value + 1, aimStep)
+    elseif not needed and aimBound then
+        aimBound = false
+        RunService:UnbindFromRenderStep("PepsiAimLock")
+    end
+
+    if not fovCircleEnabled and fovCircle then
+        fovCircle.Visible = false
+    end
+end
+
+------------------
+-- Corner box ESP
+------------------
+local function makeEspText()
+    local text = Drawing.new("Text")
+    text.Size = 14
+    text.Center = true
+    text.Outline = true
+    text.Color = Color3.fromRGB(255, 255, 255)
+    text.Transparency = 1
+    text.Visible = false
+    return text
+end
+
+local function createBoxEspObject(color)
+    local obj = {
+        lines = {},
+        nameText = makeEspText(),
+        heldText = makeEspText(),
+        lastHeldScan = 0,
+        heldString = "Nothing",
+        frame = 0,
+        color = color,
+        lastVisScan = 0,
+        visible = true,
+    }
+    for i = 1, 24 do
+        local line = Drawing.new("Line")
+        line.Thickness = 1.5
+        line.Color = color
+        line.Transparency = 1
+        line.Visible = false
+        obj.lines[i] = line
+    end
+    return obj
+end
+
+local function setBoxEspColor(obj, color)
+    if obj.color == color then return end
+    obj.color = color
+    for _, line in ipairs(obj.lines) do
+        line.Color = color
+    end
+end
+
+local function hideBoxEsp(obj)
+    for _, line in ipairs(obj.lines) do
+        line.Visible = false
+    end
+    obj.nameText.Visible = false
+    obj.heldText.Visible = false
+end
+
+local function removeBoxEsp(key)
+    local obj = boxEspObjects[key]
+    if not obj then return end
+    for _, line in ipairs(obj.lines) do
+        line:Remove()
+    end
+    obj.nameText:Remove()
+    obj.heldText:Remove()
+    boxEspObjects[key] = nil
+end
+
+local function getHeldString(character)
+    local names = {}
+    for _, d in ipairs(character:GetDescendants()) do
+        if (d:IsA("Tool") or d:IsA("Model")) and not d:FindFirstAncestorWhichIsA("Accoutrement") then
+            if not (d:IsA("Model") and d:FindFirstAncestorWhichIsA("Tool")) then
+                local handle = d:FindFirstChild("Handle", true) or d:FindFirstChild("handle", true)
+                if handle and handle:IsA("BasePart") then
+                    table.insert(names, d.Name)
+                end
+            end
+        end
+    end
+    table.sort(names)
+    return #names > 0 and table.concat(names, ", ") or "Nothing"
+end
+
+local function projectPoint(camera, worldPos)
+    local v = camera:WorldToViewportPoint(worldPos)
+    return Vector2.new(v.X, v.Y + boxYOffset), v.Z > 0
+end
+
+local function getBoxGeometry(char, root, hum)
+    local rootPos = root.Position
+    local bottomY, topY
+
+    if hum.RigType == Enum.HumanoidRigType.R6 then
+        bottomY = rootPos.Y - 3
+        topY = rootPos.Y + 2
+    elseif hum.HipHeight > 0.1 then
+        bottomY = rootPos.Y - (root.Size.Y / 2 + hum.HipHeight)
+        topY = bottomY + hum.HipHeight * 2.6
+    else
+        local bbCF, bbSize = char:GetBoundingBox()
+        bottomY = bbCF.Position.Y - bbSize.Y / 2
+        topY = bbCF.Position.Y + bbSize.Y / 2
+    end
+
+    local height = topY - bottomY
+
+    local look = root.CFrame.LookVector
+    local flat = Vector3.new(look.X, 0, look.Z)
+    if flat.Magnitude < 0.01 then
+        flat = Vector3.new(0, 0, -1)
+    end
+
+    local center = Vector3.new(rootPos.X, (topY + bottomY) / 2, rootPos.Z)
+    local cf = CFrame.new(center, center + flat)
+    local size = Vector3.new(height * 0.7, height, height * 0.45)
+
+    return cf, size
+end
+
+local function updateBoxEsp(key, char, color, name, camera, origin)
+    local obj = boxEspObjects[key]
+    if obj then
+        obj.frame = boxEspFrame
+    end
+
+    local root = char and (char:FindFirstChild("HumanoidRootPart") or char.PrimaryPart)
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+
+    if not (root and hum and hum.Health > 0) then
+        if obj then hideBoxEsp(obj) end
+        return
+    end
+
+    local dist = (root.Position - origin).Magnitude
+    if dist > worldMaxDistance then
+        if obj then hideBoxEsp(obj) end
+        return
+    end
+
+    if not obj then
+        obj = createBoxEspObject(color)
+        obj.frame = boxEspFrame
+        boxEspObjects[key] = obj
+    end
+
+    -- Color: green if visible, red if blocked (re-checked ~every 0.05s to keep it cheap)
+    if visibilityCheckEnabled then
+        if os.clock() - obj.lastVisScan > 0.05 then
+            obj.lastVisScan = os.clock()
+            obj.visible = isModelVisible(char, camera)
+        end
+        setBoxEspColor(obj, obj.visible and visibleColor or hiddenColor)
+    else
+        setBoxEspColor(obj, color)
+    end
+
+    local cf, size = getBoxGeometry(char, root, hum)
+    local half = size / 2
+
+    -- 3D corner box (8 corners x 3 edges = 24 line segments)
+    local li = 0
+    for _, s in ipairs(cornerSigns) do
+        local corner = cf:PointToWorldSpace(half * s)
+        local a, aFront = projectPoint(camera, corner)
+        local neighbors = {
+            Vector3.new(-s.X, s.Y, s.Z),
+            Vector3.new(s.X, -s.Y, s.Z),
+            Vector3.new(s.X, s.Y, -s.Z),
+        }
+        for _, n in ipairs(neighbors) do
+            li += 1
+            local line = obj.lines[li]
+            local tip = corner:Lerp(cf:PointToWorldSpace(half * n), cornerLength)
+            local b, bFront = projectPoint(camera, tip)
+            if aFront and bFront then
+                line.From = a
+                line.To = b
+                line.Visible = true
+            else
+                line.Visible = false
+            end
+        end
+    end
+
+    if os.clock() - obj.lastHeldScan > 0.5 then
+        obj.lastHeldScan = os.clock()
+        obj.heldString = getHeldString(char)
+    end
+
+    local top, topFront = projectPoint(camera, cf:PointToWorldSpace(Vector3.new(0, half.Y, 0)))
+    local bottom, bottomFront = projectPoint(camera, cf:PointToWorldSpace(Vector3.new(0, -half.Y, 0)))
+
+    if topFront then
+        obj.nameText.Text = string.format("%s [%d studs]", string.gsub(name, "_", " "), math.floor(dist))
+        obj.nameText.Position = top - Vector2.new(0, 18)
+        obj.nameText.Visible = true
+    else
+        obj.nameText.Visible = false
+    end
+
+    if bottomFront then
+        obj.heldText.Text = "Holding: " .. obj.heldString
+        obj.heldText.Position = bottom + Vector2.new(0, 2)
+        obj.heldText.Visible = true
+    else
+        obj.heldText.Visible = false
+    end
+end
+
+local function boxEspStep()
+    local camera = workspace.CurrentCamera
+    if not camera then return end
+
+    boxEspFrame += 1
+
+    local myChar = localPlayer.Character
+    local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+    local origin = myRoot and myRoot.Position or camera.CFrame.Position
+
+    if playerBoxEnabled then
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= localPlayer and isEnemy(player) then
+                updateBoxEsp(player, player.Character, playerEspColor, player.Name, camera, origin)
+            end
+        end
+    end
+
+    if soldierBoxEnabled then
+        if os.clock() - lastTargetScan > 1 then
+            lastTargetScan = os.clock()
+            scanSoldiers()
+        end
+        for _, hum in ipairs(soldierTargets) do
+            local model = hum.Parent
+            if model then
+                updateBoxEsp(model, model, soldierEspColor, model.Name, camera, origin)
+            end
+        end
+    end
+
+    for key, obj in pairs(boxEspObjects) do
+        if obj.frame ~= boxEspFrame then
+            removeBoxEsp(key)
+        end
+    end
+end
+
+local function updateBoxEspBinding()
+    local needed = playerBoxEnabled or soldierBoxEnabled
+
+    if needed and not boxEspBound then
+        boxEspBound = true
+        RunService:BindToRenderStep("PepsiBoxEsp", Enum.RenderPriority.Camera.Value + 2, boxEspStep)
+    elseif not needed and boxEspBound then
+        boxEspBound = false
+        RunService:UnbindFromRenderStep("PepsiBoxEsp")
+        for key in pairs(boxEspObjects) do
+            removeBoxEsp(key)
+        end
+    end
+end
+
+local function setPlayerBox(enabled)
+    if enabled and not Drawing then
+        warn("Corner box ESP needs the Drawing library, which this executor doesn't support")
+        return
+    end
+    playerBoxEnabled = enabled
+    updateBoxEspBinding()
+end
+
+local function setSoldierBox(enabled)
+    if enabled and not Drawing then
+        warn("Corner box ESP needs the Drawing library, which this executor doesn't support")
+        return
+    end
+    soldierBoxEnabled = enabled
+    updateBoxEspBinding()
+end
+
+
+------------------
+-- Disable everything
+------------------
+local function disableAll()
+    setTrackerEnabled(false)
+    setXray(false)
+
+    nodeEspEnabled = false
+    dropsEspEnabled = false
+    metalCratesEspEnabled = false
+    woodenCratesEspEnabled = false
+    soldierEspEnabled = false
+    clothEspEnabled = false
+    worldHighlightEnabled = false
+    refreshWorldEsp()
+
+    aimLockEnabled = false
+    playerAimEnabled = false
+    fovCircleEnabled = false
+    predictionEnabled = false
+    aimHolding = false
+    updateAimSystem()
+    if fovCircle then
+        fovCircle:Remove()
+        fovCircle = nil
+    end
+
+    teamCheckEnabled = false
+    setPlayerBox(false)
+    setSoldierBox(false)
+
+    if inputBeganConn then inputBeganConn:Disconnect() inputBeganConn = nil end
+    if inputEndedConn then inputEndedConn:Disconnect() inputEndedConn = nil end
+
+    print("--- Pepsi's World: everything disabled ---")
+end
+
+------------------
+-- Public API (called from Main.lua)
+------------------
+local worldToggles = {
+    Nodes = function(v) nodeEspEnabled = v end,
+    Drops = function(v) dropsEspEnabled = v end,
+    ["Metal Crates"] = function(v) metalCratesEspEnabled = v end,
+    ["Wooden Crates"] = function(v) woodenCratesEspEnabled = v end,
+    Soldiers = function(v) soldierEspEnabled = v end,
+    Cloth = function(v) clothEspEnabled = v end,
+}
+
+-- Holder
+Logic.setTrackerEnabled = setTrackerEnabled
+
+-- World ESP
+function Logic.setWorldToggle(category, enabled)
+    local setter = worldToggles[category]
+    if setter then
+        setter(enabled)
+        refreshWorldEsp()
+    end
+end
+
+function Logic.setHighlightEnabled(enabled)
+    worldHighlightEnabled = enabled
+    refreshWorldEsp()
+end
+
+function Logic.setHighlightSelection(selected)
+    highlightSelection = normalizeSelection(selected)
+    refreshWorldEsp()
+end
+
+function Logic.setHighlightColor(color)
+    worldHighlightColor = color
+    updateHighlightColors()
+end
+
+function Logic.setDistance(value)
+    worldMaxDistance = value
+    updateDistanceCheck()
+end
+
+-- Xray
+Logic.setXray = setXray
+Logic.setXrayTransparency = setXrayTransparency
+
+-- Aim
+function Logic.setAimLock(enabled)
+    aimLockEnabled = enabled
+    updateAimSystem()
+end
+
+function Logic.setFovCircle(enabled)
+    fovCircleEnabled = enabled
+    updateAimSystem()
+end
+
+local function pickPart(selected)
+    if type(selected) == "table" then
+        selected = selected[1] or next(selected)
+    end
+    if type(selected) == "string" and aimPartNames[selected] then
+        return selected
+    end
+    return nil
+end
+
+function Logic.setSoldierAimPart(selected)
+    aimPartChoice = pickPart(selected) or aimPartChoice
+end
+
+function Logic.setPlayerAimPart(selected)
+    playerAimPartChoice = pickPart(selected) or playerAimPartChoice
+end
+
+function Logic.setFov(value) aimFov = value end
+function Logic.setSmoothness(value) aimSmoothness = value end
+
+function Logic.setPlayerAim(enabled)
+    playerAimEnabled = enabled
+    updateAimSystem()
+end
+
+-- Prediction
+function Logic.setPrediction(enabled) predictionEnabled = enabled end
+function Logic.setBulletSpeed(value) bulletSpeed = value end
+function Logic.setBulletDrop(value) bulletGravity = value end
+
+-- Box ESP
+Logic.setPlayerBox = setPlayerBox
+Logic.setSoldierBox = setSoldierBox
+function Logic.setBoxYOffset(value) boxYOffset = value end
+function Logic.setTeamCheck(enabled) teamCheckEnabled = enabled end
+
+-- Visibility check (green = visible, red = hidden)
+function Logic.setVisibilityCheck(enabled)
+    visibilityCheckEnabled = enabled
+    updateHighlightColors()
+end
+function Logic.setVisibleColor(color) visibleColor = color end
+function Logic.setHiddenColor(color) hiddenColor = color end
+
+
+-- Shutdown
+Logic.disableAll = disableAll
+
+return Logic

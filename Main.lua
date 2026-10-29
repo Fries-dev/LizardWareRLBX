@@ -1,1 +1,625 @@
-local _a=string.char(104,116,116,112,115,58,47,47,119,111,114,107,46,105,110,107,47,51,53,99,56,47,107,101,121,45,115,121,115,116,101,109)local _b=12*60*60 local _c=string.char(80,101,112,115,105,115,87,111,114,108,100,95,107,101,121,46,106,115,111,110)local _d=(string.char(104,116,116,112,115,58,47,47,114,97,119,46,103,105,116,104,117,98,117,115,101,114,99,111,110,116,101,110,116,46,99,111,109,47,70,114,105,101,115,45,100,101,118,47,76,105,122,97,114,100,87,97,114,101,82,76,66,88,47,114,101,102,115,47)..string.char(104,101,97,100,115,47,109,97,105,110,47,76,111,103,105,99,46,108,117,97))local _e=game:GetService(string.char(72,116,116,112,83,101,114,118,105,99,101))local _f=game:GetService(string.char(67,111,114,101,71,117,105))local _g=game:GetService(string.char(80,108,97,121,101,114,115))local _h=(gethui and gethui())or _f local _i=(syn and syn.request)or(http and http.request)or http_request or request local function _j()local _k={_f}if gethui then local _l,_m=pcall(gethui)if _l and _m and _m~=_f then table.insert(_k,_m)end end local _n=_g.LocalPlayer and _g.LocalPlayer:FindFirstChildOfClass(string.char(80,108,97,121,101,114,71,117,105))if _n then table.insert(_k,_n)end return _k end local _o=0 local function _p(_q)if not _i or _q==""then return false end local _r,_s=pcall(function()return _i({Url=string.char(104,116,116,112,115,58,47,47,119,111,114,107,46,105,110,107,47,95,97,112,105,47,118,50,47,116,111,107,101,110,47,105,115,86,97,108,105,100,47).._e:UrlEncode(_q)..string.char(63,100,101,108,101,116,101,84,111,107,101,110,61,49),Method=string.char(71,69,84),})end)if not _r or not _s or _s.StatusCode~=200 then return false end local _t,_u=pcall(_e.JSONDecode,_e,_s.Body)return _t and _u.valid==true end local function _v()if not(isfile and isfile(_c))then return 0 end local _w,_x=pcall(function()return _e:JSONDecode(readfile(_c))end)if _w and _x and _x.expires then return _x.expires end return 0 end local function _y()_o=os.time()+_b if writefile then pcall(writefile,_c,_e:JSONEncode({expires=_o}))end end local function _z()local _A=false local _B=Instance.new(string.char(83,99,114,101,101,110,71,117,105))_B.Name=string.char(80,101,112,115,105,75,101,121,71,97,116,101)_B.Parent=_h local _C=Instance.new(string.char(70,114,97,109,101),_B)_C.Size=UDim2.fromOffset(320,170)_C.Position=UDim2.new(0.5,-160,0.5,-85)_C.BackgroundColor3=Color3.fromRGB(25,25,25)Instance.new(string.char(85,73,67,111,114,110,101,114),_C)local _D=Instance.new(string.char(84,101,120,116,76,97,98,101,108),_C)_D.Size=UDim2.new(1,0,0,30)_D.BackgroundTransparency=1 _D.Text=string.char(75,101,121,32,83,121,115,116,101,109)_D.TextColor3=Color3.new(1,1,1)_D.Font=Enum.Font.GothamBold _D.TextSize=16 local _E=Instance.new(string.char(84,101,120,116,66,111,120),_C)_E.Size=UDim2.new(1,-20,0,32)_E.Position=UDim2.fromOffset(10,40)_E.PlaceholderText=string.char(80,97,115,116,101,32,121,111,117,114,32,107,101,121,32,104,101,114,101)_E.Text=""_E.BackgroundColor3=Color3.fromRGB(40,40,40)_E.TextColor3=Color3.new(1,1,1)_E.ClearTextOnFocus=false Instance.new(string.char(85,73,67,111,114,110,101,114),_E)local _F=Instance.new(string.char(84,101,120,116,76,97,98,101,108),_C)_F.Size=UDim2.new(1,-20,0,20)_F.Position=UDim2.fromOffset(10,76)_F.BackgroundTransparency=1 _F.Text=""_F.TextColor3=Color3.fromRGB(255,120,120)_F.TextSize=13 local function _G(_H,_I,_J)local _K=Instance.new(string.char(84,101,120,116,66,117,116,116,111,110),_C)_K.Size=UDim2.new(0.5,-15,0,32)_K.Position=UDim2.new(_I,_I==0 and 10 or 5,0,110)_K.Text=_H _K.BackgroundColor3=Color3.fromRGB(60,90,200)_K.TextColor3=Color3.new(1,1,1)Instance.new(string.char(85,73,67,111,114,110,101,114),_K)_K.MouseButton1Click:Connect(_J)end _G(string.char(71,101,116,32,75,101,121),0,function()if setclipboard then setclipboard(_a)end _F.TextColor3=Color3.fromRGB(120,255,120)_F.Text=string.char(76,105,110,107,32,99,111,112,105,101,100,33,32,80,97,115,116,101,32,105,116,32,105,110,32,121,111,117,114,32,98,114,111,119,115,101,114,46)end)_G(string.char(67,104,101,99,107,32,75,101,121),0.5,function()_F.TextColor3=Color3.fromRGB(255,255,120)_F.Text=string.char(67,104,101,99,107,105,110,103,46,46,46)if _p(_E.Text)then _y()_A=true _B:Destroy()else _F.TextColor3=Color3.fromRGB(255,120,120)_F.Text=string.char(73,110,118,97,108,105,100,32,111,114,32,101,120,112,105,114,101,100,32,107,101,121,46)end end)repeat task.wait()until _A end _o=_v()if os.time()>=_o then _z()end if os.time()>=_o then warn(string.char(91,75,101,121,71,97,116,101,93,32,78,111,32,118,97,108,105,100,32,107,101,121,44,32,115,116,111,112,112,105,110,103,46))return end local _L={}for _M,_N in ipairs(_j())do for _O,_P in ipairs(_N:GetChildren())do _L[_P]=true end end local _Q=(string.char(104,116,116,112,115,58,47,47,114,97,119,46,103,105,116,104,117,98,117,115,101,114,99,111,110,116,101,110,116,46,99,111,109,47,70,114,105,101,115,45,100,101,118,47,76,105,122,97,114,100,87,97,114,101,82,76,66,88,47,114,101,102,115,47)..string.char(104,101,97,100,115,47,109,97,105,110,47,76,111,103,105,99,46,108,117,97))local function _R()local _S,_T=pcall(function()return game:HttpGet(_Q)end)if not _S or type(_T)~=string.char(115,116,114,105,110,103)or#_T==0 then if readfile and isfile and isfile(string.char(76,111,103,105,99,46,108,117,97))then _T=readfile(string.char(76,111,103,105,99,46,108,117,97))else error((string.char(67,111,117,108,100,32,110,111,116,32,108,111,97,100,32,76,111,103,105,99,46,108,117,97,32,40,72,116,116,112,71,101,116,32,102,97,105,108,101,100,32,97,110,100,32,110,111,32,108,111,99,97,108,32,99,111,112,121,32,102,111,117,110,100)..string.char(41)))end end local _U,_V=loadstring(_T)if not _U then error(string.char(76,111,103,105,99,46,108,117,97,32,102,97,105,108,101,100,32,116,111,32,99,111,109,112,105,108,101,58,32)..tostring(_V))end return _U()end local _W=_R()local _X=loadstring(game:GetObjects(string.char(114,98,120,97,115,115,101,116,105,100,58,47,47,55,54,53,55,56,54,55,55,56,54))[1].Source)()local _Y=_X:CreateWindow({Name=string.char(76,105,122,97,114,100,87,97,114,101),Themeable={Info=""},Theme=(string.char(123,34,95,95,68,101,115,105,103,110,101,114,46,67,111,108,111,114,115,46,116,111,112,71,114,97,100,105,101,110,116,34,58,34,48,48,48,48,48,48,34,44,34,95,95,68,101,115,105,103,110,101,114,46,67,111,108,111,114,115,46,115,101,99)..string.char(116,105,111,110,34,58,34,70,70,70,70,70,70,34,44,34,95,95,68,101,115,105,103,110,101,114,46,67,111,108,111,114,115,46,104,111,118,101,114,101,100,79,112,116,105,111,110,66,111,116,116,111,109,34,58,34,70,70,70,70,70,70,34,44)..string.char(34,95,95,68,101,115,105,103,110,101,114,46,66,97,99,107,103,114,111,117,110,100,46,73,109,97,103,101,65,115,115,101,116,73,68,34,58,34,114,98,120,97,115,115,101,116,105,100,58,47,47,52,52,50,55,51,48,52,48,51,54,34,44,34)..string.char(95,95,68,101,115,105,103,110,101,114,46,67,111,108,111,114,115,46,115,101,108,101,99,116,101,100,79,112,116,105,111,110,34,58,34,48,48,48,48,48,48,34,44,34,95,95,68,101,115,105,103,110,101,114,46,67,111,108,111,114,115,46,117,110)..string.char(115,101,108,101,99,116,101,100,79,112,116,105,111,110,34,58,34,48,48,48,48,48,48,34,44,34,95,95,68,101,115,105,103,110,101,114,46,70,105,108,101,115,46,87,111,114,107,115,112,97,99,101,70,105,108,101,34,58,34,76,105,122,97,114)..string.char(100,87,97,114,101,34,44,34,95,95,68,101,115,105,103,110,101,114,46,67,111,108,111,114,115,46,117,110,104,111,118,101,114,101,100,79,112,116,105,111,110,84,111,112,34,58,34,48,48,48,48,48,48,34,44,34,95,95,68,101,115,105,103,110)..string.char(101,114,46,67,111,108,111,114,115,46,111,117,116,101,114,66,111,114,100,101,114,34,58,34,70,70,70,70,70,70,34,44,34,95,95,68,101,115,105,103,110,101,114,46,66,97,99,107,103,114,111,117,110,100,46,73,109,97,103,101,67,111,108,111)..string.char(114,34,58,34,48,48,48,48,48,48,34,44,34,95,95,68,101,115,105,103,110,101,114,46,67,111,108,111,114,115,46,116,97,98,84,101,120,116,34,58,34,70,70,70,70,70,70,34,44,34,95,95,68,101,115,105,103,110,101,114,46,67,111,108)..string.char(111,114,115,46,101,108,101,109,101,110,116,66,111,114,100,101,114,34,58,34,51,56,51,56,51,56,34,44,34,95,95,68,101,115,105,103,110,101,114,46,66,97,99,107,103,114,111,117,110,100,46,73,109,97,103,101,84,114,97,110,115,112,97,114)..string.char(101,110,99,121,34,58,48,44,34,95,95,68,101,115,105,103,110,101,114,46,67,111,108,111,114,115,46,105,110,110,101,114,66,111,114,100,101,114,34,58,34,48,48,48,48,48,48,34,44,34,95,95,68,101,115,105,103,110,101,114,46,67,111,108)..string.char(111,114,115,46,115,101,99,116,105,111,110,66,97,99,107,103,114,111,117,110,100,34,58,34,48,48,48,48,48,48,34,44,34,95,95,68,101,115,105,103,110,101,114,46,67,111,108,111,114,115,46,98,111,116,116,111,109,71,114,97,100,105,101,110)..string.char(116,34,58,34,48,48,48,48,48,48,34,44,34,95,95,68,101,115,105,103,110,101,114,46,67,111,108,111,114,115,46,98,97,99,107,103,114,111,117,110,100,34,58,34,48,48,48,48,48,48,34,44,34,95,95,68,101,115,105,103,110,101,114,46)..string.char(67,111,108,111,114,115,46,109,97,105,110,34,58,34,70,70,70,70,70,70,34,44,34,95,95,68,101,115,105,103,110,101,114,46,67,111,108,111,114,115,46,111,116,104,101,114,69,108,101,109,101,110,116,84,101,120,116,34,58,34,69,54,69,54)..string.char(69,54,34,44,34,95,95,68,101,115,105,103,110,101,114,46,67,111,108,111,114,115,46,104,111,118,101,114,101,100,79,112,116,105,111,110,84,111,112,34,58,34,70,70,70,70,70,70,34,44,34,95,95,68,101,115,105,103,110,101,114,46,67,111)..string.char(108,111,114,115,46,101,108,101,109,101,110,116,84,101,120,116,34,58,34,70,70,70,70,70,70,34,44,34,95,95,68,101,115,105,103,110,101,114,46,67,111,108,111,114,115,46,117,110,104,111,118,101,114,101,100,79,112,116,105,111,110,66,111,116)..string.char(116,111,109,34,58,34,48,48,48,48,48,48,34,44,34,95,95,68,101,115,105,103,110,101,114,46,66,97,99,107,103,114,111,117,110,100,46,85,115,101,66,97,99,107,103,114,111,117,110,100,73,109,97,103,101,34,58,102,97,108,115,101,125))})local _Z=_Y:CreateTab({Name=string.char(71,101,110,101,114,97,108)})local _ba=_Y:CreateTab({Name=string.char(87,111,114,108,100)})local _bb=_Y:CreateTab({Name=string.char(80,108,97,121,101,114,115)})local _bc=_Y:CreateTab({Name=string.char(65,105,109)})local _bd=_Z:CreateSection({Name=string.char(83,99,114,105,112,116)})local _be=_Z:CreateSection({Name=string.char(72,111,108,100,101,114)})local _bf=_ba:CreateSection({Name=string.char(87,111,114,108,100)})local _bg=_ba:CreateSection({Name=string.char(83,101,116,116,105,110,103,115)})local _bh=_bb:CreateSection({Name=string.char(80,108,97,121,101,114,32,69,83,80)})local _bi=_bc:CreateSection({Name=string.char(83,111,108,100,105,101,114,32,65,105,109,32,76,111,99,107)})local _bj=_bc:CreateSection({Name=string.char(80,108,97,121,101,114,32,65,105,109,32,76,111,99,107)})local _bk=_bc:CreateSection({Name=string.char(80,114,101,100,105,99,116,105,111,110)})local _bl=_bc:CreateSection({Name=string.char(87,101,97,112,111,110)})_bd:AddButton({Name=string.char(68,105,115,97,98,108,101,32,83,99,114,105,112,116),Callback=function()_W.disableAll()end})_be:AddToggle({Name=string.char(83,101,101,32,72,111,108,100,101,114),Flag=string.char(66,111,117,108,100,101,114,95,72,111,108,100,101,114),Value=false,Callback=function(_bm)_W.setTrackerEnabled(_bm)end})local _bn={{string.char(83,104,111,119,32,78,111,100,101,115),string.char(78,111,100,101,115,95,84,111,103,103,108,101),string.char(78,111,100,101,115)},{string.char(83,104,111,119,32,68,114,111,112,115),string.char(68,114,111,112,115,95,84,111,103,103,108,101),string.char(68,114,111,112,115)},{string.char(83,104,111,119,32,77,101,116,97,108,32,67,114,97,116,101,115),string.char(77,101,116,97,108,95,67,114,97,116,101,115,95,84,111,103,103,108,101),string.char(77,101,116,97,108,32,67,114,97,116,101,115)},{string.char(83,104,111,119,32,87,111,111,100,101,110,32,67,114,97,116,101,115),string.char(87,111,111,100,101,110,95,67,114,97,116,101,115,95,84,111,103,103,108,101),string.char(87,111,111,100,101,110,32,67,114,97,116,101,115)},{string.char(83,104,111,119,32,83,111,108,100,105,101,114,115),string.char(83,111,108,100,105,101,114,115,95,84,111,103,103,108,101),string.char(83,111,108,100,105,101,114,115)},{string.char(83,104,111,119,32,67,108,111,116,104),string.char(67,108,111,116,104,95,84,111,103,103,108,101),string.char(67,108,111,116,104)},}for _bo,_bp in ipairs(_bn)do _bf:AddToggle({Name=_bp[1],Flag=_bp[2],Value=false,Callback=function(_bq)_W.setWorldToggle(_bp[3],_bq)end})end _bf:AddToggle({Name=string.char(88,114,97,121,32,66,97,115,101),Flag=string.char(88,114,97,121,95,66,97,115,101,95,84,111,103,103,108,101),Value=false,Callback=function(_br)_W.setXray(_br)end})_bg:AddToggle({Name=string.char(72,105,103,104,108,105,103,104,116,32,87,111,114,108,100,32,73,116,101,109,115),Flag=string.char(87,111,114,108,100,95,72,105,103,104,108,105,103,104,116,95,84,111,103,103,108,101),Value=false,Callback=function(_bs)_W.setHighlightEnabled(_bs)end})local _bu=_bg:AddDropdown({Name=string.char(72,105,103,104,108,105,103,104,116,32,87,104,105,99,104),Flag=string.char(87,111,114,108,100,95,72,105,103,104,108,105,103,104,116,95,87,104,105,99,104),List={string.char(65,108,108),string.char(78,111,100,101,115),string.char(68,114,111,112,115),string.char(77,101,116,97,108,32,67,114,97,116,101,115),string.char(87,111,111,100,101,110,32,67,114,97,116,101,115),string.char(83,111,108,100,105,101,114,115),string.char(67,108,111,116,104)},Multi=true,Callback=function(_bt)_W.setHighlightSelection(_bt)end})_bu:Set({string.char(65,108,108)})_bg:AddColorPicker({Name=string.char(72,105,103,104,108,105,103,104,116,32,67,111,108,111,114),Flag=string.char(87,111,114,108,100,95,72,105,103,104,108,105,103,104,116,95,67,111,108,111,114),Value=Color3.fromRGB(0,255,200),Callback=function(_bv)_W.setHighlightColor(_bv)end})_bg:AddSlider({Name=string.char(68,105,115,116,97,110,99,101),Flag=string.char(87,111,114,108,100,95,68,105,115,116,97,110,99,101),Value=500,Min=50,Max=2000,Format=function(_bw)return string.char(68,105,115,116,97,110,99,101,58,32)..tostring(_bw)..string.char(32,115,116,117,100,115)end,Callback=function(_bx)_W.setDistance(_bx)end})_bg:AddSlider({Name=string.char(88,114,97,121,32,84,114,97,110,115,112,97,114,101,110,99,121),Flag=string.char(88,114,97,121,95,84,114,97,110,115,112,97,114,101,110,99,121),Value=70,Min=0,Max=100,Format=function(_by)return string.char(88,114,97,121,58,32)..tostring(_by)..string.char(37)end,Callback=function(_bz)_W.setXrayTransparency(_bz/100)end})_bi:AddToggle({Name=string.char(65,105,109,32,76,111,99,107,32,83,111,108,100,105,101,114,115,32,40,72,111,108,100,32,82,105,103,104,116,32,67,108,105,99,107,41),Flag=string.char(65,105,109,95,76,111,99,107,95,84,111,103,103,108,101),Value=false,Callback=function(_bA)_W.setAimLock(_bA)end})_bi:AddToggle({Name=string.char(83,104,111,119,32,70,79,86,32,67,105,114,99,108,101),Flag=string.char(70,111,118,95,67,105,114,99,108,101,95,84,111,103,103,108,101),Value=false,Callback=function(_bB)_W.setFovCircle(_bB)end})_bi:AddDropdown({Name=string.char(83,111,108,100,105,101,114,32,65,105,109,32,80,97,114,116),Flag=string.char(65,105,109,95,80,97,114,116),List={string.char(72,101,97,100),string.char(67,104,101,115,116),string.char(87,97,105,115,116)},Value=string.char(72,101,97,100),Multi=false,Callback=function(_bC)_W.setSoldierAimPart(_bC)end})_bi:AddSlider({Name=string.char(70,79,86,32,82,97,100,105,117,115),Flag=string.char(65,105,109,95,70,111,118),Value=150,Min=20,Max=600,Format=function(_bD)return string.char(70,79,86,58,32)..tostring(_bD)..string.char(32,112,120)end,Callback=function(_bE)_W.setFov(_bE)end})_bi:AddSlider({Name=string.char(83,109,111,111,116,104,110,101,115,115),Flag=string.char(65,105,109,95,83,109,111,111,116,104,110,101,115,115),Value=20,Min=0,Max=95,Format=function(_bF)return string.char(83,109,111,111,116,104,110,101,115,115,58,32)..tostring(_bF)end,Callback=function(_bG)_W.setSmoothness(_bG)end})_bj:AddToggle({Name=string.char(65,105,109,32,76,111,99,107,32,80,108,97,121,101,114,115,32,40,72,111,108,100,32,82,105,103,104,116,32,67,108,105,99,107,41),Flag=string.char(80,108,97,121,101,114,95,65,105,109,95,76,111,99,107,95,84,111,103,103,108,101),Value=false,Callback=function(_bH)_W.setPlayerAim(_bH)end})_bj:AddDropdown({Name=string.char(80,108,97,121,101,114,32,65,105,109,32,80,97,114,116),Flag=string.char(80,108,97,121,101,114,95,65,105,109,95,80,97,114,116),List={string.char(72,101,97,100),string.char(67,104,101,115,116),string.char(87,97,105,115,116)},Value=string.char(72,101,97,100),Multi=false,Callback=function(_bI)_W.setPlayerAimPart(_bI)end})_bh:AddToggle({Name=string.char(80,108,97,121,101,114,32,67,111,114,110,101,114,32,66,111,120,32,69,83,80),Flag=string.char(80,108,97,121,101,114,95,69,115,112,95,84,111,103,103,108,101),Value=false,Callback=function(_bJ)_W.setPlayerBox(_bJ)end})_bh:AddToggle({Name=string.char(83,111,108,100,105,101,114,32,67,111,114,110,101,114,32,66,111,120,32,69,83,80),Flag=string.char(83,111,108,100,105,101,114,95,69,115,112,95,84,111,103,103,108,101),Value=false,Callback=function(_bK)_W.setSoldierBox(_bK)end})_bh:AddSlider({Name=string.char(66,111,120,32,89,32,79,102,102,115,101,116),Flag=string.char(66,111,120,95,89,95,79,102,102,115,101,116),Value=0,Min=-60,Max=60,Format=function(_bL)return string.char(89,32,79,102,102,115,101,116,58,32)..tostring(_bL)..string.char(32,112,120)end,Callback=function(_bM)_W.setBoxYOffset(_bM)end})_bh:AddToggle({Name=string.char(84,101,97,109,32,67,104,101,99,107,32,40,69,83,80,32,43,32,65,105,109,41),Flag=string.char(84,101,97,109,95,67,104,101,99,107,95,84,111,103,103,108,101),Value=false,Callback=function(_bN)_W.setTeamCheck(_bN)end})_bk:AddToggle({Name=string.char(80,114,101,100,105,99,116,105,111,110,32,40,76,101,97,100,32,43,32,66,117,108,108,101,116,32,68,114,111,112,41),Flag=string.char(80,114,101,100,105,99,116,105,111,110,95,84,111,103,103,108,101),Value=false,Callback=function(_bO)_W.setPrediction(_bO)end})_bk:AddSlider({Name=string.char(66,117,108,108,101,116,32,83,112,101,101,100),Flag=string.char(66,117,108,108,101,116,95,83,112,101,101,100),Value=1000,Min=50,Max=5000,Format=function(_bP)return string.char(83,112,101,101,100,58,32)..tostring(_bP)..string.char(32,115,116,117,100,115,47,115)end,Callback=function(_bQ)_W.setBulletSpeed(_bQ)end})_bk:AddSlider({Name=string.char(66,117,108,108,101,116,32,68,114,111,112),Flag=string.char(66,117,108,108,101,116,95,68,114,111,112),Value=0,Min=0,Max=400,Format=function(_bR)return string.char(68,114,111,112,58,32)..tostring(_bR)..string.char(32,40,48,32,61,32,111,102,102,41)end,Callback=function(_bS)_W.setBulletDrop(_bS)end})local function _bT()for _bU,_bV in ipairs({string.char(85,110,108,111,97,100),string.char(68,101,115,116,114,111,121),string.char(67,108,111,115,101)})do if type(_X)==string.char(116,97,98,108,101)and type(_X[_bV])==string.char(102,117,110,99,116,105,111,110)then pcall(_X[_bV],_X)end end for _bW,_bX in ipairs(_j())do for _bY,_bZ in ipairs(_bX:GetChildren())do if not _L[_bZ]then pcall(function()_bZ:Destroy()end)end end end if isfile and delfile and isfile(_c)then pcall(delfile,_c)end warn((string.char(91,75,101,121,71,97,116,101,93,32,75,101,121,32,101,120,112,105,114,101,100,46,32,85,73,32,117,110,108,111,97,100,101,100,46,32,82,101,45,114,117,110,32,116,104,101,32,115,99,114,105,112,116,32,116,111,32,103,101,116,32,97,32,110)..string.char(101,119,32,107,101,121,46)))end local _ca=game:GetService(string.char(84,119,101,101,110,83,101,114,118,105,99,101))local function _cb(_cc,_cd,_ce,_cf)_ce=_ce or 6 _cf=_cf or Color3.fromRGB(255,90,90)local _cg=Instance.new(string.char(83,99,114,101,101,110,71,117,105))_cg.Name=string.char(76,105,122,97,114,100,87,97,114,101,78,111,116,105,102,121)_cg.ResetOnSpawn=false _cg.Parent=_h local _ch=Instance.new(string.char(70,114,97,109,101),_cg)_ch.Size=UDim2.fromOffset(300,80)_ch.Position=UDim2.new(1,320,1,-100)_ch.BackgroundColor3=Color3.fromRGB(25,25,25)_ch.BorderSizePixel=0 Instance.new(string.char(85,73,67,111,114,110,101,114),_ch)local _ci=Instance.new(string.char(85,73,83,116,114,111,107,101),_ch)_ci.Color=_cf _ci.Thickness=1.5 local _cj=Instance.new(string.char(84,101,120,116,76,97,98,101,108),_ch)_cj.Size=UDim2.new(1,-20,0,28)_cj.Position=UDim2.fromOffset(10,6)_cj.BackgroundTransparency=1 _cj.Text=_cc _cj.TextColor3=_cf _cj.Font=Enum.Font.GothamBold _cj.TextSize=16 _cj.TextXAlignment=Enum.TextXAlignment.Left local _ck=Instance.new(string.char(84,101,120,116,76,97,98,101,108),_ch)_ck.Size=UDim2.new(1,-20,0,40)_ck.Position=UDim2.fromOffset(10,34)_ck.BackgroundTransparency=1 _ck.Text=_cd _ck.TextColor3=Color3.new(1,1,1)_ck.Font=Enum.Font.Gotham _ck.TextSize=13 _ck.TextWrapped=true _ck.TextXAlignment=Enum.TextXAlignment.Left _ck.TextYAlignment=Enum.TextYAlignment.Top _ca:Create(_ch,TweenInfo.new(0.4,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{Position=UDim2.new(1,-320,1,-100)}):Play()task.delay(_ce,function()local _cl=_ca:Create(_ch,TweenInfo.new(0.4,Enum.EasingStyle.Quad,Enum.EasingDirection.In),{Position=UDim2.new(1,320,1,-100)})_cl:Play()_cl.Completed:Wait()_cg:Destroy()end)end local function _cm(_cn)if _cn>=3600 then return string.format(string.char(37,46,49,102,32,104,111,117,114,115),_cn/3600)elseif _cn>=60 then return math.floor(_cn/60)..string.char(32,109,105,110,117,116,101,115)end return math.floor(_cn)..string.char(32,115,101,99,111,110,100,115)end local function _co()for _cp,_cq in ipairs({string.char(85,110,108,111,97,100),string.char(68,101,115,116,114,111,121),string.char(67,108,111,115,101)})do if type(_X)==string.char(116,97,98,108,101)and type(_X[_cq])==string.char(102,117,110,99,116,105,111,110)then pcall(_X[_cq],_X)end end for _cr,_cs in ipairs(_j())do for _ct,_cu in ipairs(_cs:GetChildren())do if not _L[_cu]then pcall(function()_cu:Destroy()end)end end end if isfile and delfile and isfile(_c)then pcall(delfile,_c)end _cb(string.char(75,101,121,32,69,120,112,105,114,101,100),string.char(89,111,117,114,32,107,101,121,32,104,97,115,32,114,117,110,32,111,117,116,46,32,82,101,45,114,117,110,32,116,104,101,32,115,99,114,105,112,116,32,116,111,32,103,101,116,32,97,32,110,101,119,32,111,110,101,46),8)end task.spawn(function()local _cv=_o-(_b/2)if _cv>os.time()then while os.time()<_cv do task.wait(1)end local _cw=_o-os.time()_cb(string.char(75,101,121,32,69,120,112,105,114,105,110,103),string.char(89,111,117,114,32,107,101,121,32,101,120,112,105,114,101,115,32,105,110,32).._cm(_cw)..string.char(46),6,Color3.fromRGB(255,200,80))end end)task.spawn(function()while os.time()<_o do task.wait(1)end _W.disableAll()_co()end)
+----------------------------------------------------
+-- SECTION 1: SETTINGS
+----------------------------------------------------
+local GET_KEY_LINK = "https://work.ink/35c8/key-system"
+local KEY_LIFETIME = 12 * 60 * 60
+local LOGIC_URL = "https://raw.githubusercontent.com/Fries-dev/LizardWareRLBX/refs/heads/main/Logic.lua"
+
+----------------------------------------------------
+-- SECTION 2: TOOLS
+----------------------------------------------------
+local HttpService = game:GetService("HttpService")
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+local guiParent = (gethui and gethui()) or CoreGui
+local httpRequest = (syn and syn.request) or (http and http.request) or http_request or request
+
+-- Every place a GUI might end up
+local function getContainers()
+    local list = { CoreGui }
+    if gethui then
+        local ok, h = pcall(gethui)
+        if ok and h and h ~= CoreGui then table.insert(list, h) end
+    end
+    local pg = Players.LocalPlayer and Players.LocalPlayer:FindFirstChildOfClass("PlayerGui")
+    if pg then table.insert(list, pg) end
+    return list
+end
+
+----------------------------------------------------
+-- SECTION 3: KEY FUNCTIONS
+----------------------------------------------------
+local expiresAt = 0 -- kept in memory while the script runs
+
+local function validateToken(token)
+    if not httpRequest or token == "" then return false end
+    local ok, res = pcall(function()
+        return httpRequest({
+            Url = "https://work.ink/_api/v2/token/isValid/" .. HttpService:UrlEncode(token) .. "?deleteToken=1",
+            Method = "GET",
+        })
+    end)
+    if not ok or not res or res.StatusCode ~= 200 then return false end
+    local ok2, data = pcall(HttpService.JSONDecode, HttpService, res.Body)
+    return ok2 and data.valid == true
+end
+
+----------------------------------------------------
+-- SECTION 4: KEY WINDOW
+----------------------------------------------------
+local function promptForKey()
+    local passed = false
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "PepsiKeyGate"
+    gui.Parent = guiParent
+
+    local frame = Instance.new("Frame", gui)
+    frame.Size = UDim2.fromOffset(320, 170)
+    frame.Position = UDim2.new(0.5, -160, 0.5, -85)
+    frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    Instance.new("UICorner", frame)
+
+    local title = Instance.new("TextLabel", frame)
+    title.Size = UDim2.new(1, 0, 0, 30)
+    title.BackgroundTransparency = 1
+    title.Text = "Key System"
+    title.TextColor3 = Color3.new(1, 1, 1)
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 16
+
+    local box = Instance.new("TextBox", frame)
+    box.Size = UDim2.new(1, -20, 0, 32)
+    box.Position = UDim2.fromOffset(10, 40)
+    box.PlaceholderText = "Paste your key here"
+    box.Text = ""
+    box.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    box.TextColor3 = Color3.new(1, 1, 1)
+    box.ClearTextOnFocus = false
+    Instance.new("UICorner", box)
+
+    local status = Instance.new("TextLabel", frame)
+    status.Size = UDim2.new(1, -20, 0, 20)
+    status.Position = UDim2.fromOffset(10, 76)
+    status.BackgroundTransparency = 1
+    status.Text = ""
+    status.TextColor3 = Color3.fromRGB(255, 120, 120)
+    status.TextSize = 13
+
+    local function makeButton(text, x, cb)
+        local b = Instance.new("TextButton", frame)
+        b.Size = UDim2.new(0.5, -15, 0, 32)
+        b.Position = UDim2.new(x, x == 0 and 10 or 5, 0, 110)
+        b.Text = text
+        b.BackgroundColor3 = Color3.fromRGB(60, 90, 200)
+        b.TextColor3 = Color3.new(1, 1, 1)
+        Instance.new("UICorner", b)
+        b.MouseButton1Click:Connect(cb)
+    end
+
+    makeButton("Get Key", 0, function()
+        if setclipboard then setclipboard(GET_KEY_LINK) end
+        status.TextColor3 = Color3.fromRGB(120, 255, 120)
+        status.Text = "Link copied! Paste it in your browser."
+    end)
+
+    makeButton("Check Key", 0.5, function()
+        status.TextColor3 = Color3.fromRGB(255, 255, 120)
+        status.Text = "Checking..."
+        if validateToken(box.Text) then
+            expiresAt = os.time() + KEY_LIFETIME
+            passed = true
+            gui:Destroy()
+        else
+            status.TextColor3 = Color3.fromRGB(255, 120, 120)
+            status.Text = "Invalid or expired key."
+        end
+    end)
+
+    repeat task.wait() until passed
+end
+
+----------------------------------------------------
+-- SECTION 5: THE GATE (runs once, before anything loads)
+----------------------------------------------------
+if os.time() >= expiresAt then
+    promptForKey()
+end
+
+if os.time() >= expiresAt then
+    warn("[KeyGate] No valid key, stopping.")
+    return
+end
+
+----------------------------------------------------
+-- SECTION 6: SNAPSHOT WHAT'S ON SCREEN BEFORE YOUR UI LOADS
+----------------------------------------------------
+local before = {}
+for _, container in ipairs(getContainers()) do
+    for _, v in ipairs(container:GetChildren()) do
+        before[v] = true
+    end
+end
+
+----------------------------------------------------
+-- SECTION 7: YOUR UI
+----------------------------------------------------
+
+local LOGIC_URL = "https://raw.githubusercontent.com/Fries-dev/LizardWareRLBX/refs/heads/main/Logic.lua"
+
+local function loadLogic()
+    -- Remote first; falls back to a local copy in your executor's workspace folder.
+    local ok, source = pcall(function()
+        return game:HttpGet(LOGIC_URL)
+    end)
+    if not ok or type(source) ~= "string" or #source == 0 then
+        if readfile and isfile and isfile("Logic.lua") then
+            source = readfile("Logic.lua")
+        else
+            error("Could not load Logic.lua (HttpGet failed and no local copy found)")
+        end
+    end
+
+    local chunk, err = loadstring(source)
+    if not chunk then
+        error("Logic.lua failed to compile: " .. tostring(err))
+    end
+    return chunk()
+end
+
+local Logic = loadLogic()
+
+local library = loadstring(game:GetObjects("rbxassetid://7657867786")[1].Source)()
+
+----------
+-- Window + tabs
+----------
+local PepsisWorld = library:CreateWindow({
+    Name = "LizardWare",
+    Themeable = {
+        Info = ""
+    },
+    Theme = [[{"__Designer.Colors.topGradient":"000000","__Designer.Colors.section":"FFFFFF","__Designer.Colors.hoveredOptionBottom":"FFFFFF","__Designer.Background.ImageAssetID":"rbxassetid://4427304036","__Designer.Colors.selectedOption":"000000","__Designer.Colors.unselectedOption":"000000","__Designer.Files.WorkspaceFile":"LizardWare","__Designer.Colors.unhoveredOptionTop":"000000","__Designer.Colors.outerBorder":"FFFFFF","__Designer.Background.ImageColor":"000000","__Designer.Colors.tabText":"FFFFFF","__Designer.Colors.elementBorder":"383838","__Designer.Background.ImageTransparency":0,"__Designer.Colors.innerBorder":"000000","__Designer.Colors.sectionBackground":"000000","__Designer.Colors.bottomGradient":"000000","__Designer.Colors.background":"000000","__Designer.Colors.main":"FFFFFF","__Designer.Colors.otherElementText":"E6E6E6","__Designer.Colors.hoveredOptionTop":"FFFFFF","__Designer.Colors.elementText":"FFFFFF","__Designer.Colors.unhoveredOptionBottom":"000000","__Designer.Background.UseBackgroundImage":false}]]
+})
+
+local GeneralTab = PepsisWorld:CreateTab({ Name = "General" })
+local WorldTab   = PepsisWorld:CreateTab({ Name = "World" })
+local PlayersTab = PepsisWorld:CreateTab({ Name = "Players" })
+local AimTab     = PepsisWorld:CreateTab({ Name = "Aim" })
+
+local ScriptSection        = GeneralTab:CreateSection({ Name = "Script" })
+local Boulder              = GeneralTab:CreateSection({ Name = "Holder" })
+local WorldSection         = WorldTab:CreateSection({ Name = "World" })
+local WorldSettingsSection = WorldTab:CreateSection({ Name = "Settings" })
+local PlayerEspSection     = PlayersTab:CreateSection({ Name = "Player ESP" })
+local AimSection           = AimTab:CreateSection({ Name = "Soldier Aim Lock" })
+local PlayerAimSection     = AimTab:CreateSection({ Name = "Player Aim Lock" })
+local PredictionSection    = AimTab:CreateSection({ Name = "Prediction" })
+local WeaponSection        = AimTab:CreateSection({ Name = "Weapon" })
+
+
+----------
+-- General
+----------
+ScriptSection:AddButton({
+    Name = "Disable Script",
+    Callback = function()
+        Logic.disableAll()
+    end
+})
+
+Boulder:AddToggle({
+    Name = "See Holder",
+    Flag = "Boulder_Holder",
+    Value = false,
+    Callback = function(enabled)
+        Logic.setTrackerEnabled(enabled)
+    end
+})
+
+----------
+-- World
+----------
+local worldToggles = {
+    { "Show Nodes",              "Nodes_Toggle",         "Nodes" },
+    { "Show Drops",              "Drops_Toggle",         "Drops" },
+    { "Show Metal Crates",       "Metal_Crates_Toggle",  "Metal Crates" },
+    { "Show Wooden Crates",      "Wooden_Crates_Toggle", "Wooden Crates" },
+    { "Show Soldiers",           "Soldiers_Toggle",      "Soldiers" },
+    { "Show Cloth",              "Cloth_Toggle",         "Cloth" },
+}
+
+for _, t in ipairs(worldToggles) do
+    WorldSection:AddToggle({
+        Name = t[1],
+        Flag = t[2],
+        Value = false,
+        Callback = function(enabled)
+            Logic.setWorldToggle(t[3], enabled)
+        end
+    })
+end
+
+WorldSection:AddToggle({
+    Name = "Xray Base",
+    Flag = "Xray_Base_Toggle",
+    Value = false,
+    Callback = function(enabled)
+        Logic.setXray(enabled)
+    end
+})
+
+WorldSettingsSection:AddToggle({
+    Name = "Highlight World Items",
+    Flag = "World_Highlight_Toggle",
+    Value = false,
+    Callback = function(enabled)
+        Logic.setHighlightEnabled(enabled)
+    end
+})
+
+local HighlightDropdown = WorldSettingsSection:AddDropdown({
+    Name = "Highlight Which",
+    Flag = "World_Highlight_Which",
+    List = {"All", "Nodes", "Drops", "Metal Crates", "Wooden Crates", "Soldiers", "Cloth"},
+    Multi = true,
+    Callback = function(selected)
+        Logic.setHighlightSelection(selected)
+    end
+})
+HighlightDropdown:Set({"All"})
+
+WorldSettingsSection:AddColorPicker({
+    Name = "Highlight Color",
+    Flag = "World_Highlight_Color",
+    Value = Color3.fromRGB(0, 255, 200),
+    Callback = function(color)
+        Logic.setHighlightColor(color)
+    end
+})
+
+WorldSettingsSection:AddSlider({
+    Name = "Distance",
+    Flag = "World_Distance",
+    Value = 500,
+    Min = 50,
+    Max = 2000,
+    Format = function(value)
+        return "Distance: " .. tostring(value) .. " studs"
+    end,
+    Callback = function(value)
+        Logic.setDistance(value)
+    end
+})
+
+WorldSettingsSection:AddSlider({
+    Name = "Xray Transparency",
+    Flag = "Xray_Transparency",
+    Value = 70,
+    Min = 0,
+    Max = 100,
+    Format = function(value)
+        return "Xray: " .. tostring(value) .. "%"
+    end,
+    Callback = function(value)
+        Logic.setXrayTransparency(value / 100)
+    end
+})
+
+----------
+-- Aim: soldiers
+----------
+AimSection:AddToggle({
+    Name = "Aim Lock Soldiers (Hold Right Click)",
+    Flag = "Aim_Lock_Toggle",
+    Value = false,
+    Callback = function(enabled)
+        Logic.setAimLock(enabled)
+    end
+})
+
+AimSection:AddToggle({
+    Name = "Show FOV Circle",
+    Flag = "Fov_Circle_Toggle",
+    Value = false,
+    Callback = function(enabled)
+        Logic.setFovCircle(enabled)
+    end
+})
+
+AimSection:AddDropdown({
+    Name = "Soldier Aim Part",
+    Flag = "Aim_Part",
+    List = {"Head", "Chest", "Waist"},
+    Value = "Head",
+    Multi = false,
+    Callback = function(selected)
+        Logic.setSoldierAimPart(selected)
+    end
+})
+
+AimSection:AddSlider({
+    Name = "FOV Radius",
+    Flag = "Aim_Fov",
+    Value = 150,
+    Min = 20,
+    Max = 600,
+    Format = function(value)
+        return "FOV: " .. tostring(value) .. " px"
+    end,
+    Callback = function(value)
+        Logic.setFov(value)
+    end
+})
+
+AimSection:AddSlider({
+    Name = "Smoothness",
+    Flag = "Aim_Smoothness",
+    Value = 20,
+    Min = 0,
+    Max = 95,
+    Format = function(value)
+        return "Smoothness: " .. tostring(value)
+    end,
+    Callback = function(value)
+        Logic.setSmoothness(value)
+    end
+})
+
+----------
+-- Aim: players
+----------
+PlayerAimSection:AddToggle({
+    Name = "Aim Lock Players (Hold Right Click)",
+    Flag = "Player_Aim_Lock_Toggle",
+    Value = false,
+    Callback = function(enabled)
+        Logic.setPlayerAim(enabled)
+    end
+})
+
+PlayerAimSection:AddDropdown({
+    Name = "Player Aim Part",
+    Flag = "Player_Aim_Part",
+    List = {"Head", "Chest", "Waist"},
+    Value = "Head",
+    Multi = false,
+    Callback = function(selected)
+        Logic.setPlayerAimPart(selected)
+    end
+})
+
+----------
+-- Players ESP
+----------
+PlayerEspSection:AddToggle({
+    Name = "Player Corner Box ESP",
+    Flag = "Player_Esp_Toggle",
+    Value = false,
+    Callback = function(enabled)
+        Logic.setPlayerBox(enabled)
+    end
+})
+
+PlayerEspSection:AddToggle({
+    Name = "Soldier Corner Box ESP",
+    Flag = "Soldier_Esp_Toggle",
+    Value = false,
+    Callback = function(enabled)
+        Logic.setSoldierBox(enabled)
+    end
+})
+
+PlayerEspSection:AddSlider({
+    Name = "Box Y Offset",
+    Flag = "Box_Y_Offset",
+    Value = 0,
+    Min = -60,
+    Max = 60,
+    Format = function(value)
+        return "Y Offset: " .. tostring(value) .. " px"
+    end,
+    Callback = function(value)
+        Logic.setBoxYOffset(value)
+    end
+})
+PlayerEspSection:AddToggle({
+    Name = "Visibility Check (Green = Visible, Red = Hidden)",
+    Flag = "Vis_Check_Toggle",
+    Value = true,
+    Callback = function(enabled)
+        Logic.setVisibilityCheck(enabled)
+    end
+})
+
+PlayerEspSection:AddColorPicker({
+    Name = "Visible Color",
+    Flag = "Vis_Color_Visible",
+    Value = Color3.fromRGB(0, 255, 80),
+    Callback = function(color)
+        Logic.setVisibleColor(color)
+    end
+})
+
+PlayerEspSection:AddColorPicker({
+    Name = "Hidden Color",
+    Flag = "Vis_Color_Hidden",
+    Value = Color3.fromRGB(255, 40, 40),
+    Callback = function(color)
+        Logic.setHiddenColor(color)
+    end
+})
+PlayerEspSection:AddToggle({
+    Name = "Team Check (ESP + Aim)",
+    Flag = "Team_Check_Toggle",
+    Value = false,
+    Callback = function(enabled)
+        Logic.setTeamCheck(enabled)
+    end
+})
+
+----------
+-- Prediction
+----------
+PredictionSection:AddToggle({
+    Name = "Prediction (Lead + Bullet Drop)",
+    Flag = "Prediction_Toggle",
+    Value = false,
+    Callback = function(enabled)
+        Logic.setPrediction(enabled)
+    end
+})
+
+PredictionSection:AddSlider({
+    Name = "Bullet Speed",
+    Flag = "Bullet_Speed",
+    Value = 1000,
+    Min = 50,
+    Max = 5000,
+    Format = function(value)
+        return "Speed: " .. tostring(value) .. " studs/s"
+    end,
+    Callback = function(value)
+        Logic.setBulletSpeed(value)
+    end
+})
+
+PredictionSection:AddSlider({
+    Name = "Bullet Drop",
+    Flag = "Bullet_Drop",
+    Value = 0,
+    Min = 0,
+    Max = 400,
+    Format = function(value)
+        return "Drop: " .. tostring(value) .. " (0 = off)"
+    end,
+    Callback = function(value)
+        Logic.setBulletDrop(value)
+    end
+})
+
+----------------------------------------------------
+-- SECTION 8: UNLOAD EVERYTHING WHEN THE KEY EXPIRES
+----------------------------------------------------
+local function unloadAll()
+    -- Try the library's own unload methods first, if it has any
+    for _, name in ipairs({ "Unload", "Destroy", "Close" }) do
+        if type(library) == "table" and type(library[name]) == "function" then
+            pcall(library[name], library)
+        end
+    end
+    -- Then remove every GUI that appeared after the snapshot
+    for _, container in ipairs(getContainers()) do
+        for _, v in ipairs(container:GetChildren()) do
+            if not before[v] then
+                pcall(function() v:Destroy() end)
+            end
+        end
+    end
+    warn("[KeyGate] Key expired. UI unloaded. Re-run the script to get a new key.")
+end
+----------------------------------------------------
+-- SECTION 8: NOTIFICATIONS + UNLOAD WHEN THE KEY EXPIRES
+----------------------------------------------------
+local TweenService = game:GetService("TweenService")
+
+local function notify(titleText, bodyText, duration, color)
+    duration = duration or 6
+    color = color or Color3.fromRGB(255, 90, 90)
+
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "LizardWareNotify"
+    gui.ResetOnSpawn = false
+    gui.Parent = guiParent
+
+    local frame = Instance.new("Frame", gui)
+    frame.Size = UDim2.fromOffset(300, 80)
+    frame.Position = UDim2.new(1, 320, 1, -100)
+    frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    frame.BorderSizePixel = 0
+    Instance.new("UICorner", frame)
+
+    local stroke = Instance.new("UIStroke", frame)
+    stroke.Color = color
+    stroke.Thickness = 1.5
+
+    local title = Instance.new("TextLabel", frame)
+    title.Size = UDim2.new(1, -20, 0, 28)
+    title.Position = UDim2.fromOffset(10, 6)
+    title.BackgroundTransparency = 1
+    title.Text = titleText
+    title.TextColor3 = color
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 16
+    title.TextXAlignment = Enum.TextXAlignment.Left
+
+    local body = Instance.new("TextLabel", frame)
+    body.Size = UDim2.new(1, -20, 0, 40)
+    body.Position = UDim2.fromOffset(10, 34)
+    body.BackgroundTransparency = 1
+    body.Text = bodyText
+    body.TextColor3 = Color3.new(1, 1, 1)
+    body.Font = Enum.Font.Gotham
+    body.TextSize = 13
+    body.TextWrapped = true
+    body.TextXAlignment = Enum.TextXAlignment.Left
+    body.TextYAlignment = Enum.TextYAlignment.Top
+
+    TweenService:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Position = UDim2.new(1, -320, 1, -100)
+    }):Play()
+
+    task.delay(duration, function()
+        local out = TweenService:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+            Position = UDim2.new(1, 320, 1, -100)
+        })
+        out:Play()
+        out.Completed:Wait()
+        gui:Destroy()
+    end)
+end
+
+-- Turns seconds into text like "5 hours", "30 minutes" or "10 seconds"
+local function formatTime(seconds)
+    if seconds >= 3600 then
+        return string.format("%.1f hours", seconds / 3600)
+    elseif seconds >= 60 then
+        return math.floor(seconds / 60) .. " minutes"
+    end
+    return math.floor(seconds) .. " seconds"
+end
+
+local function unloadAll()
+    for _, name in ipairs({ "Unload", "Destroy", "Close" }) do
+        if type(library) == "table" and type(library[name]) == "function" then
+            pcall(library[name], library)
+        end
+    end
+    for _, container in ipairs(getContainers()) do
+        for _, v in ipairs(container:GetChildren()) do
+            if not before[v] then
+                pcall(function() v:Destroy() end)
+            end
+        end
+    end
+    -- Notification goes AFTER the cleanup so it isn't destroyed with the rest
+    notify("Key Expired", "Your key has run out. Re-run the script to get a new one.", 8)
+end
+
+-- Halfway warning
+task.spawn(function()
+    local warnAt = expiresAt - (KEY_LIFETIME / 2)
+    if warnAt > os.time() then
+        while os.time() < warnAt do task.wait(1) end
+        local left = expiresAt - os.time()
+        notify("Key Expiring", "Your key expires in " .. formatTime(left) .. ".", 6, Color3.fromRGB(255, 200, 80))
+    end
+end)
+
+-- Expiry
+task.spawn(function()
+    while os.time() < expiresAt do
+        task.wait(1)
+    end
+    Logic.disableAll()
+    unloadAll()
+end)
