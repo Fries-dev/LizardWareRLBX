@@ -30,7 +30,37 @@ end
 -- SECTION 3: KEY FUNCTIONS
 ----------------------------------------------------
 local expiresAt = 0 -- kept in memory while the script runs
+local KEY_FILE = "LizardWare_key.json"
 
+local function saveKey()
+    if not writefile then return end
+    pcall(function()
+        writefile(KEY_FILE, HttpService:JSONEncode({
+            expiresAt = expiresAt,
+            userId = Players.LocalPlayer.UserId,
+        }))
+    end)
+end
+
+local function loadSavedKey()
+    if not (isfile and readfile and isfile(KEY_FILE)) then return end
+    local ok, data = pcall(function()
+        return HttpService:JSONDecode(readfile(KEY_FILE))
+    end)
+    if ok and type(data) == "table"
+        and type(data.expiresAt) == "number"
+        and data.userId == Players.LocalPlayer.UserId
+        and data.expiresAt > os.time()
+        and data.expiresAt <= os.time() + KEY_LIFETIME then
+        expiresAt = data.expiresAt
+    elseif delfile then
+        pcall(delfile, KEY_FILE) -- expired or invalid, clean it up
+    end
+end
+loadSavedKey()           -- <-- add this line
+if os.time() >= expiresAt then
+    promptForKey()
+end
 local function validateToken(token)
     if not httpRequest or token == "" then return false end
     local ok, res = pcall(function()
@@ -107,6 +137,7 @@ local function promptForKey()
         status.Text = "Checking..."
         if validateToken(box.Text) then
             expiresAt = os.time() + KEY_LIFETIME
+            saveKey()            -- <-- add this line
             passed = true
             gui:Destroy()
         else
