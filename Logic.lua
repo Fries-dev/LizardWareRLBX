@@ -76,6 +76,17 @@ local visParams = RaycastParams.new()
 visParams.FilterType = Enum.RaycastFilterType.Exclude
 visParams.RespectCanCollide = true
 
+-- Camera FOV changer + zoom
+local fovChangerEnabled = false
+local customFov = 70
+local zoomEnabled = false
+local zoomFov = 20
+local zoomMode = "Hold" -- "Hold" or "Toggle"
+local zoomKey = Enum.KeyCode.Z
+local zoomActive = false
+local cameraFovBound = false
+local originalFov = nil
+
 local aimPartNames = {
     ["Head"] = {"Head"},
     ["Chest"] = {"UpperTorso", "Torso"},
@@ -1000,9 +1011,91 @@ end
 
 
 ------------------
+-- FOV changer + zoom
+------------------
+local function cameraFovStep()
+    local camera = workspace.CurrentCamera
+    if not camera then return end
+
+    local target
+    if zoomEnabled and zoomActive then
+        target = zoomFov
+    elseif fovChangerEnabled then
+        target = customFov
+    else
+        target = originalFov or 70
+    end
+
+    -- Smooth transition so zoom in/out doesn't snap
+    local current = camera.FieldOfView
+    if math.abs(current - target) < 0.1 then
+        camera.FieldOfView = target
+    else
+        camera.FieldOfView = current + (target - current) * 0.3
+    end
+end
+
+local function updateCameraFovBinding()
+    local needed = fovChangerEnabled or (zoomEnabled and zoomActive)
+
+    if needed and not cameraFovBound then
+        local camera = workspace.CurrentCamera
+        if camera and not originalFov then
+            originalFov = camera.FieldOfView
+        end
+        cameraFovBound = true
+        RunService:BindToRenderStep("PepsiCameraFov", Enum.RenderPriority.Camera.Value + 3, cameraFovStep)
+    elseif not needed and cameraFovBound then
+        -- Keep the step running until FOV has eased back to the original value
+        local camera = workspace.CurrentCamera
+        if camera and originalFov and math.abs(camera.FieldOfView - originalFov) > 0.1 then
+            return
+        end
+        cameraFovBound = false
+        RunService:UnbindFromRenderStep("PepsiCameraFov")
+        if camera and originalFov then
+            camera.FieldOfView = originalFov
+        end
+        originalFov = nil
+    end
+end
+
+-- Zoom key input (hold or toggle)
+local zoomBeganConn = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed or not zoomEnabled then return end
+    if input.KeyCode == zoomKey then
+        if zoomMode == "Toggle" then
+            zoomActive = not zoomActive
+        else
+            zoomActive = true
+        end
+        updateCameraFovBinding()
+    end
+end)
+local zoomEndedConn = UserInputService.InputEnded:Connect(function(input)
+    if zoomMode == "Hold" and input.KeyCode == zoomKey then
+        zoomActive = false
+    end
+end)
+
+-- While unzoomed with the changer off, let the step finish easing back, then unbind
+RunService.Heartbeat:Connect(function()
+    if cameraFovBound and not (fovChangerEnabled or (zoomEnabled and zoomActive)) then
+        updateCameraFovBinding()
+    end
+end)
+
+------------------
 -- Disable everything
 ------------------
 local function disableAll()
+    fovChangerEnabled = false
+    zoomEnabled = false
+    zoomActive = false
+    updateCameraFovBinding()
+    if zoomBeganConn then zoomBeganConn:Disconnect() zoomBeganConn = nil end
+    if zoomEndedConn then zoomEndedConn:Disconnect() zoomEndedConn = nil end
+
     setTrackerEnabled(false)
     setXray(false)
 
@@ -1140,6 +1233,49 @@ end
 function Logic.setVisibleColor(color) visibleColor = color end
 function Logic.setHiddenColor(color) hiddenColor = color end
 
+
+-- FOV changer + zoom
+function Logic.setFovChanger(enabled)
+    fovChangerEnabled = enabled
+    updateCameraFovBinding()
+end
+
+function Logic.setCustomFov(value)
+    customFov = value
+end
+
+function Logic.setZoomEnabled(enabled)
+    zoomEnabled = enabled
+    if not enabled then zoomActive = false end
+    updateCameraFovBinding()
+end
+
+function Logic.setZoomFov(value)
+    zoomFov = value
+end
+
+function Logic.setZoomMode(selected)
+    if type(selected) == "table" then
+        selected = selected[1] or next(selected)
+    end
+    if selected == "Hold" or selected == "Toggle" then
+        zoomMode = selected
+        zoomActive = false
+        updateCameraFovBinding()
+    end
+end
+
+function Logic.setZoomKey(selected)
+    if type(selected) == "table" then
+        selected = selected[1] or next(selected)
+    end
+    if typeof(selected) == "EnumItem" then
+        zoomKey = selected
+    elseif type(selected) == "string" then
+        local key = Enum.KeyCode[selected]
+        if key then zoomKey = key end
+    end
+end
 
 -- Shutdown
 Logic.disableAll = disableAll

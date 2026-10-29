@@ -364,7 +364,76 @@ AimSection:AddSlider({
         Logic.setSmoothness(value)
     end
 })
+----------
+-- Camera: FOV + zoom
+----------
+AimSection:AddToggle({
+    Name = "FOV Changer",
+    Flag = "Fov_Changer_Toggle",
+    Value = false,
+    Callback = function(enabled)
+        Logic.setFovChanger(enabled)
+    end
+})
 
+AimSection:AddSlider({
+    Name = "Camera FOV",
+    Flag = "Camera_Fov",
+    Value = 70,
+    Min = 30,
+    Max = 120,
+    Format = function(value)
+        return "FOV: " .. tostring(value)
+    end,
+    Callback = function(value)
+        Logic.setCustomFov(value)
+    end
+})
+
+AimSection:AddToggle({
+    Name = "Zoom",
+    Flag = "Zoom_Toggle",
+    Value = false,
+    Callback = function(enabled)
+        Logic.setZoomEnabled(enabled)
+    end
+})
+
+AimSection:AddDropdown({
+    Name = "Zoom Mode",
+    Flag = "Zoom_Mode",
+    List = {"Hold", "Toggle"},
+    Value = "Hold",
+    Multi = false,
+    Callback = function(selected)
+        Logic.setZoomMode(selected)
+    end
+})
+
+AimSection:AddDropdown({
+    Name = "Zoom Key",
+    Flag = "Zoom_Key",
+    List = {"Z", "X", "C", "V", "B", "Q", "E", "F", "G", "LeftAlt"},
+    Value = "Z",
+    Multi = false,
+    Callback = function(selected)
+        Logic.setZoomKey(selected)
+    end
+})
+
+AimSection:AddSlider({
+    Name = "Zoom FOV",
+    Flag = "Zoom_Fov",
+    Value = 20,
+    Min = 5,
+    Max = 60,
+    Format = function(value)
+        return "Zoom FOV: " .. tostring(value)
+    end,
+    Callback = function(value)
+        Logic.setZoomFov(value)
+    end
+})
 ----------
 -- Aim: players
 ----------
