@@ -375,13 +375,20 @@ AimSection:AddToggle({
         Logic.setFovChanger(enabled)
     end
 })
-
+PlayerEspSection:AddToggle({
+    Name = "Noclip",
+    Flag = "Noclip_Toggle",
+    Value = false,
+    Callback = function(enabled)
+        Logic.setNoclip(enabled)
+    end
+})
 AimSection:AddSlider({
     Name = "Camera FOV",
     Flag = "Camera_Fov",
     Value = 70,
     Min = 30,
-    Max = 120,
+    Max = 400,
     Format = function(value)
         return "FOV: " .. tostring(value)
     end,
@@ -425,7 +432,7 @@ AimSection:AddSlider({
     Name = "Zoom FOV",
     Flag = "Zoom_Fov",
     Value = 20,
-    Min = 5,
+    Min = -100,
     Max = 60,
     Format = function(value)
         return "Zoom FOV: " .. tostring(value)

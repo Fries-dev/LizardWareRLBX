@@ -87,6 +87,11 @@ local zoomActive = false
 local cameraFovBound = false
 local originalFov = nil
 
+-- Noclip
+local noclipEnabled = false
+local noclipConnection = nil
+local noclipChanged = {} -- parts we turned CanCollide off on
+
 local aimPartNames = {
     ["Head"] = {"Head"},
     ["Chest"] = {"UpperTorso", "Torso"},
@@ -1086,9 +1091,44 @@ RunService.Heartbeat:Connect(function()
 end)
 
 ------------------
+-- Noclip
+------------------
+local function setNoclip(enabled)
+    noclipEnabled = enabled
+
+    if noclipConnection then
+        noclipConnection:Disconnect()
+        noclipConnection = nil
+    end
+
+    if enabled then
+        -- Stepped runs before physics each frame, so collisions stay off even if the game re-enables them
+        noclipConnection = RunService.Stepped:Connect(function()
+            local char = localPlayer.Character
+            if not char then return end
+            for _, part in ipairs(char:GetDescendants()) do
+                if part:IsA("BasePart") and part.CanCollide then
+                    noclipChanged[part] = true
+                    part.CanCollide = false
+                end
+            end
+        end)
+    else
+        -- Restore collisions on the parts we changed
+        for part in pairs(noclipChanged) do
+            if part and part.Parent then
+                part.CanCollide = true
+            end
+        end
+        noclipChanged = {}
+    end
+end
+
+------------------
 -- Disable everything
 ------------------
 local function disableAll()
+    setNoclip(false)
     fovChangerEnabled = false
     zoomEnabled = false
     zoomActive = false
@@ -1276,6 +1316,9 @@ function Logic.setZoomKey(selected)
         if key then zoomKey = key end
     end
 end
+
+-- Noclip
+Logic.setNoclip = setNoclip
 
 -- Shutdown
 Logic.disableAll = disableAll
