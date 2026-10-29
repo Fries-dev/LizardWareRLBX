@@ -1098,20 +1098,16 @@ do
         -- Initialize the data table first so it's not nil
         local data = data or {}
 
-        -- Your tool added function
         data.tool_added = function(item)
             if not item:IsA("Tool") then return end
             
-            print("Tool added detected:", item.Name)
+            print("Tool detected for UI:", item.Name)
             
-            objects["weapon"].Text = item.Name
-            
-            local exists = data.info and data.info.character and data.info.character:FindFirstChild(item.Name)
-            
-            if espFlags["Weapon"] and exists then
+            -- Force update the text directly
+            if objects["weapon"] then
+                objects["weapon"].Text = item.Name
+                -- Force it to parent to the holder so it becomes visible on screen
                 objects["weapon"].Parent = objects["holder"]
-            else
-                objects["weapon"].Parent = esp.cache
             end
         end
 
