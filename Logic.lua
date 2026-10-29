@@ -274,11 +274,15 @@ local function setupCharacterTracker(player, character)
     table.insert(connections, character.DescendantRemoving:Connect(queueUpdate))
 end
 
+local statusLabel = script.Parent -- Point to your TextLabel
+
 local function setTrackerEnabled(enabled)
     isTracking = enabled
 
     if isTracking then
-        print("--- See Holder: ENABLED ---")
+        statusLabel.Text = "Status: ENABLED"
+        statusLabel.TextColor3 = Color3.fromRGB(0, 255, 0) -- Green for active
+        
         for _, player in ipairs(Players:GetPlayers()) do
             if player.Character then
                 setupCharacterTracker(player, player.Character)
@@ -298,7 +302,9 @@ local function setTrackerEnabled(enabled)
             end))
         end))
     else
-        print("--- See Holder: DISABLED ---")
+        statusLabel.Text = "Status: DISABLED"
+        statusLabel.TextColor3 = Color3.fromRGB(255, 0, 0) -- Red for disabled
+        
         for _, conn in ipairs(connections) do
             conn:Disconnect()
         end
@@ -1085,9 +1091,19 @@ do
 
         data.tool_added = function(item)
             if not item:IsA("Tool") then return end
-            local exists = data.info.character and data.info.character:FindFirstChild(item.Name)
-            objects["weapon"].Text = item.Name
-            objects["weapon"].Parent = (espFlags["Weapon"] and exists and objects["holder"]) or esp.cache
+            
+            -- Update the text label with the tool's name
+            objects["weapon"].Text = "Weapon: " .. item.Name
+            
+            -- Check if the tool is currently in the character's hands/inventory
+            local isInCharacter = data.info.character and data.info.character:FindFirstChild(item.Name) ~= nil
+            
+            -- Control whether the UI object is parented to your holder frame or hidden in cache
+            if espFlags["Weapon"] and isInCharacter then
+                objects["weapon"].Parent = objects["holder"]
+            else
+                objects["weapon"].Parent = esp.cache
+            end
         end
 
         data.refresh_descendants = function()
