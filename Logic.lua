@@ -87,6 +87,27 @@ local zoomActive = false
 local cameraFovBound = false
 local originalFov = nil
 
+-- Movement + visuals extras
+local Lighting = game:GetService("Lighting")
+
+local speedEnabled = false
+local walkSpeedValue = 32
+local originalWalkSpeed = nil
+local speedConnection = nil
+
+local infJumpEnabled = false
+local infJumpConnection = nil
+
+local flyEnabled = false
+local flySpeed = 60
+local flyConnection = nil
+local flyVelocity = nil
+local flyGyro = nil
+
+local fullbrightEnabled = false
+local fullbrightConnection = nil
+local lightingBackup = nil
+
 -- Noclip
 local noclipEnabled = false
 local noclipConnection = nil
@@ -1125,10 +1146,186 @@ local function setNoclip(enabled)
 end
 
 ------------------
+-- Walk speed
+------------------
+local function getHumanoid()
+    local char = localPlayer.Character
+    return char and char:FindFirstChildOfClass("Humanoid")
+end
+
+local function setSpeed(enabled)
+    speedEnabled = enabled
+
+    if speedConnection then
+        speedConnection:Disconnect()
+        speedConnection = nil
+    end
+
+    local hum = getHumanoid()
+    if enabled then
+        if hum and not originalWalkSpeed then
+            originalWalkSpeed = hum.WalkSpeed
+        end
+        -- Heartbeat so the value sticks even if the game keeps resetting it
+        speedConnection = RunService.Heartbeat:Connect(function()
+            local h = getHumanoid()
+            if h then
+                if not originalWalkSpeed then
+                    originalWalkSpeed = h.WalkSpeed
+                end
+                h.WalkSpeed = walkSpeedValue
+            end
+        end)
+    else
+        if hum then
+            hum.WalkSpeed = originalWalkSpeed or 16
+        end
+        originalWalkSpeed = nil
+    end
+end
+
+------------------
+-- Infinite jump
+------------------
+local function setInfiniteJump(enabled)
+    infJumpEnabled = enabled
+
+    if infJumpConnection then
+        infJumpConnection:Disconnect()
+        infJumpConnection = nil
+    end
+
+    if enabled then
+        infJumpConnection = UserInputService.JumpRequest:Connect(function()
+            local hum = getHumanoid()
+            if hum then
+                hum:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end)
+    end
+end
+
+------------------
+-- Fly (WASD + Space up, Left Ctrl/Shift down, moves toward where the camera looks)
+------------------
+local function stopFly()
+    if flyConnection then
+        flyConnection:Disconnect()
+        flyConnection = nil
+    end
+    if flyVelocity then
+        flyVelocity:Destroy()
+        flyVelocity = nil
+    end
+    if flyGyro then
+        flyGyro:Destroy()
+        flyGyro = nil
+    end
+    local hum = getHumanoid()
+    if hum then
+        hum.PlatformStand = false
+    end
+end
+
+local function setFly(enabled)
+    flyEnabled = enabled
+    stopFly()
+    if not enabled then return end
+
+    flyConnection = RunService.RenderStepped:Connect(function()
+        local char = localPlayer.Character
+        local root = char and char:FindFirstChild("HumanoidRootPart")
+        local hum = char and char:FindFirstChildOfClass("Humanoid")
+        local camera = workspace.CurrentCamera
+        if not (root and hum and camera) then return end
+
+        -- Recreate the movers after respawn
+        if not flyVelocity or flyVelocity.Parent ~= root then
+            if flyVelocity then flyVelocity:Destroy() end
+            flyVelocity = Instance.new("BodyVelocity")
+            flyVelocity.MaxForce = Vector3.new(1e9, 1e9, 1e9)
+            flyVelocity.Velocity = Vector3.zero
+            flyVelocity.Parent = root
+        end
+        if not flyGyro or flyGyro.Parent ~= root then
+            if flyGyro then flyGyro:Destroy() end
+            flyGyro = Instance.new("BodyGyro")
+            flyGyro.MaxTorque = Vector3.new(1e9, 1e9, 1e9)
+            flyGyro.P = 9e4
+            flyGyro.Parent = root
+        end
+
+        hum.PlatformStand = true
+
+        local dir = Vector3.zero
+        if not UserInputService:GetFocusedTextBox() then
+            local cf = camera.CFrame
+            if UserInputService:IsKeyDown(Enum.KeyCode.W) then dir += cf.LookVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.S) then dir -= cf.LookVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.D) then dir += cf.RightVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.A) then dir -= cf.RightVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.Space) then dir += Vector3.yAxis end
+            if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl)
+                or UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+                dir -= Vector3.yAxis
+            end
+        end
+
+        flyVelocity.Velocity = dir.Magnitude > 0 and dir.Unit * flySpeed or Vector3.zero
+        flyGyro.CFrame = camera.CFrame
+    end)
+end
+
+------------------
+-- Fullbright / no fog
+------------------
+local function applyFullbright()
+    Lighting.Brightness = 2
+    Lighting.ClockTime = 14
+    Lighting.FogEnd = 1e6
+    Lighting.GlobalShadows = false
+    Lighting.Ambient = Color3.fromRGB(178, 178, 178)
+    Lighting.OutdoorAmbient = Color3.fromRGB(178, 178, 178)
+end
+
+local function setFullbright(enabled)
+    fullbrightEnabled = enabled
+
+    if fullbrightConnection then
+        fullbrightConnection:Disconnect()
+        fullbrightConnection = nil
+    end
+
+    if enabled then
+        if not lightingBackup then
+            lightingBackup = {
+                Brightness = Lighting.Brightness,
+                ClockTime = Lighting.ClockTime,
+                FogEnd = Lighting.FogEnd,
+                GlobalShadows = Lighting.GlobalShadows,
+                Ambient = Lighting.Ambient,
+                OutdoorAmbient = Lighting.OutdoorAmbient,
+            }
+        end
+        -- Re-applied every frame because many games change lighting on a day/night cycle
+        fullbrightConnection = RunService.RenderStepped:Connect(applyFullbright)
+    elseif lightingBackup then
+        for prop, value in pairs(lightingBackup) do
+            Lighting[prop] = value
+        end
+        lightingBackup = nil
+    end
+end
+
+------------------
 -- Disable everything
 ------------------
 local function disableAll()
     setNoclip(false)
+    setSpeed(false)
+    setInfiniteJump(false)
+    setFly(false)
+    setFullbright(false)
     fovChangerEnabled = false
     zoomEnabled = false
     zoomActive = false
@@ -1319,6 +1516,14 @@ end
 
 -- Noclip
 Logic.setNoclip = setNoclip
+
+-- Speed / jump / fly / fullbright
+Logic.setSpeed = setSpeed
+function Logic.setWalkSpeed(value) walkSpeedValue = value end
+Logic.setInfiniteJump = setInfiniteJump
+Logic.setFly = setFly
+function Logic.setFlySpeed(value) flySpeed = value end
+Logic.setFullbright = setFullbright
 
 -- Shutdown
 Logic.disableAll = disableAll

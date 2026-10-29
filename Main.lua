@@ -375,6 +375,75 @@ AimSection:AddToggle({
         Logic.setFovChanger(enabled)
     end
 })
+----------
+-- Movement
+----------
+PlayerEspSection:AddToggle({
+    Name = "Walk Speed",
+    Flag = "Speed_Toggle",
+    Value = false,
+    Callback = function(enabled)
+        Logic.setSpeed(enabled)
+    end
+})
+
+PlayerEspSection:AddSlider({
+    Name = "Walk Speed Value",
+    Flag = "Speed_Value",
+    Value = 32,
+    Min = 16,
+    Max = 150,
+    Format = function(value)
+        return "Speed: " .. tostring(value)
+    end,
+    Callback = function(value)
+        Logic.setWalkSpeed(value)
+    end
+})
+
+PlayerEspSection:AddToggle({
+    Name = "Infinite Jump",
+    Flag = "Inf_Jump_Toggle",
+    Value = false,
+    Callback = function(enabled)
+        Logic.setInfiniteJump(enabled)
+    end
+})
+
+PlayerEspSection:AddToggle({
+    Name = "Fly (WASD, Space up, Ctrl/Shift down)",
+    Flag = "Fly_Toggle",
+    Value = false,
+    Callback = function(enabled)
+        Logic.setFly(enabled)
+    end
+})
+
+PlayerEspSection:AddSlider({
+    Name = "Fly Speed",
+    Flag = "Fly_Speed",
+    Value = 60,
+    Min = 10,
+    Max = 300,
+    Format = function(value)
+        return "Fly: " .. tostring(value)
+    end,
+    Callback = function(value)
+        Logic.setFlySpeed(value)
+    end
+})
+
+----------
+-- Visuals
+----------
+WorldSettingsSection:AddToggle({
+    Name = "Fullbright (No Fog)",
+    Flag = "Fullbright_Toggle",
+    Value = false,
+    Callback = function(enabled)
+        Logic.setFullbright(enabled)
+    end
+})
 PlayerEspSection:AddToggle({
     Name = "Noclip",
     Flag = "Noclip_Toggle",
