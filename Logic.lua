@@ -1092,12 +1092,8 @@ do
         data.tool_added = function(item)
             if not item:IsA("Tool") then return end
             
-            -- Update the text label with the tool's name
+            -- Update the text label with the tool's name correctly
             objects["weapon"].Text = "Weapon: " .. item.Name
-            local statusLabel = script.Parent -- Point to your TextLabel
-            local isInCharacter = data.info.character and data.info.character:FindFirstChild(item.Name) ~= nil
-            statusLabel.Text = "Status: " .. (isInCharacter and "ENABLED" or "DISABLED")
-            statusLabel.TextColor3 = isInCharacter and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
             
             -- Check if the tool is currently in the character's hands/inventory
             local isInCharacter = data.info.character and data.info.character:FindFirstChild(item.Name) ~= nil
