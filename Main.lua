@@ -1,953 +1,250 @@
-----------------------------------------------------
--- SECTION 1: SETTINGS
-----------------------------------------------------
-local GET_KEY_LINK = "https://work.ink/35c8/key-system"
-local KEY_LIFETIME = 12 * 60 * 60
+-- Main.lua
+-- Atlanta UI for Pepsi's World. All behaviour lives in Logic.lua; this file only builds the menu.
+
+local library, themes = loadstring(game:HttpGet("https://raw.githubusercontent.com/i77lhm/Libraries/refs/heads/main/Atlanta/Library.lua"))()
+
+-- Load Logic.lua: from the executor workspace folder if present, otherwise from your own URL
 local LOGIC_URL = "https://raw.githubusercontent.com/Fries-dev/LizardWareRLBX/refs/heads/main/Logic.lua"
-
-----------------------------------------------------
--- SECTION 2: TOOLS
-----------------------------------------------------
-local HttpService = game:GetService("HttpService")
-local CoreGui = game:GetService("CoreGui")
-local Players = game:GetService("Players")
-local guiParent = (gethui and gethui()) or CoreGui
-local httpRequest = (syn and syn.request) or (http and http.request) or http_request or request
-
-local function getContainers()
-    local list = { CoreGui }
-    if gethui then
-        local ok, h = pcall(gethui)
-        if ok and h and h ~= CoreGui then table.insert(list, h) end
-    end
-    local pg = Players.LocalPlayer and Players.LocalPlayer:FindFirstChildOfClass("PlayerGui")
-    if pg then table.insert(list, pg) end
-    return list
+local Logic
+if isfile and readfile and isfile("Logic.lua") then
+    Logic = loadstring(readfile("Logic.lua"))()
+elseif LOGIC_URL ~= "" then
+    Logic = loadstring(game:HttpGet(LOGIC_URL))()
+else
+    error("Logic.lua not found. Put it in your executor's workspace folder or set LOGIC_URL.")
 end
 
-----------------------------------------------------
--- SECTION 3: KEY FUNCTIONS
-----------------------------------------------------
-local expiresAt = 0
-local KEY_FILE = "LizardWare_key.json"
+local dim2 = UDim2.new
+local hex = Color3.fromHex
 
-local function saveKey()
-    if not writefile then return end
-    pcall(function()
-        writefile(KEY_FILE, HttpService:JSONEncode({
-            expiresAt = expiresAt,
-            userId = Players.LocalPlayer.UserId,
-        }))
-    end)
+-- Window setup with optimized dimensions to prevent vertical overflow
+local window = library:window({name = "Pepsi's World", size = dim2(0, 750, 0, 550)})
+
+local Aiming   = window:tab({name = "Aiming"})
+local Visuals  = window:tab({name = "Visuals"})
+local World    = window:tab({name = "World"})
+local Movement = window:tab({name = "Movement"})
+local Misc     = window:tab({name = "Misc"})
+
+------------------------------------------------------------
+-- Aiming
+------------------------------------------------------------
+do
+    local column = Aiming:column()
+    local soldier, player = column:multi_section({names = {"Soldier Aim", "Player Aim"}})
+
+    soldier:toggle({name = "Enabled", flag = "soldier_aim", callback = Logic.setAimLock})
+    soldier:dropdown({name = "Aim Part", flag = "soldier_aim_part", items = {"Head", "Chest", "Waist"}, default = "Head", callback = Logic.setSoldierAimPart})
+
+    player:toggle({name = "Enabled", flag = "player_aim", callback = Logic.setPlayerAim})
+    player:dropdown({name = "Aim Part", flag = "player_aim_part", items = {"Head", "Chest", "Waist"}, default = "Head", callback = Logic.setPlayerAimPart})
+    player:toggle({name = "Team Check", flag = "team_check", callback = Logic.setTeamCheck})
+
+    local column2 = Aiming:column()
+    local settings, prediction = column2:multi_section({names = {"Settings", "Prediction"}})
+
+    settings:toggle({name = "Show FOV Circle", flag = "fov_circle", tooltip = "Hold right click to aim", callback = Logic.setFovCircle})
+    settings:slider({name = "FOV", flag = "aim_fov", min = 10, max = 800, default = 150, interval = 1, callback = Logic.setFov})
+    settings:slider({name = "Smoothness", flag = "aim_smooth", min = 0, max = 99, default = 20, interval = 1, suffix = "%", callback = Logic.setSmoothness})
+
+    prediction:toggle({name = "Enabled", flag = "prediction", callback = Logic.setPrediction})
+    prediction:slider({name = "Bullet Speed", flag = "bullet_speed", min = 50, max = 5000, default = 1000, interval = 10, callback = Logic.setBulletSpeed})
+    prediction:slider({name = "Bullet Drop", flag = "bullet_drop", min = 0, max = 200, default = 0, interval = 1, callback = Logic.setBulletDrop})
 end
 
-local function loadSavedKey()
-    if not (isfile and readfile and isfile(KEY_FILE)) then return end
-    local ok, data = pcall(function()
-        return HttpService:JSONDecode(readfile(KEY_FILE))
-    end)
-    if ok and type(data) == "table"
-        and type(data.expiresAt) == "number"
-        and data.userId == Players.LocalPlayer.UserId
-        and data.expiresAt > os.time()
-        and data.expiresAt <= os.time() + KEY_LIFETIME then
-        expiresAt = data.expiresAt
-    elseif delfile then
-        pcall(delfile, KEY_FILE)
-    end
-end
+------------------------------------------------------------
+-- Visuals (player ScreenGui ESP + soldier Drawing boxes + preview)
+------------------------------------------------------------
+do
+    local column = Visuals:column()
 
-local function validateToken(token)
-    if not httpRequest or token == "" then return false end
-    local ok, res = pcall(function()
-        return httpRequest({
-            Url = "https://work.ink/_api/v2/token/isValid/" .. HttpService:UrlEncode(token) .. "?deleteToken=1",
-            Method = "GET",
-        })
-    end)
-    if not ok or not res or res.StatusCode ~= 200 then return false end
-    local ok2, data = pcall(HttpService.JSONDecode, HttpService, res.Body)
-    return ok2 and data.valid == true
-end
+    -- Soldier boxes still use the old Drawing corner system
+    local box = column:section({name = "Soldier Box ESP", toggle = false})
+    box:toggle({name = "Soldier Boxes", flag = "soldier_box", callback = Logic.setSoldierBox})
+    box:slider({name = "Box Y Offset", flag = "box_y_offset", min = -50, max = 50, default = 0, interval = 1, suffix = "px", callback = Logic.setBoxYOffset})
 
-----------------------------------------------------
--- SECTION 4: KEY WINDOW
-----------------------------------------------------
-local function promptForKey()
-    local passed = false
-    local gui = Instance.new("ScreenGui")
-    gui.Name = "PepsiKeyGate"
-    gui.Parent = guiParent
+    local vis = column:section({name = "Visibility Check", toggle = false})
+    vis:toggle({name = "Enabled", flag = "vis_check", default = true, tooltip = "Green = visible, red = behind a wall (soldiers)", callback = Logic.setVisibilityCheck})
+    vis:toggle({name = "Visible Color", flag = "vis_color_toggle"})
+        :colorpicker({name = "Visible", flag = "visible_color", color = Color3.fromRGB(0, 255, 80), callback = Logic.setVisibleColor})
+    vis:toggle({name = "Hidden Color", flag = "hid_color_toggle"})
+        :colorpicker({name = "Hidden", flag = "hidden_color", color = Color3.fromRGB(255, 40, 40), callback = Logic.setHiddenColor})
 
-    local frame = Instance.new("Frame", gui)
-    frame.Size = UDim2.fromOffset(320, 170)
-    frame.Position = UDim2.new(0.5, -160, 0.5, -85)
-    frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    Instance.new("UICorner", frame)
+    local column2 = Visuals:column()
+    local preview
 
-    local title = Instance.new("TextLabel", frame)
-    title.Size = UDim2.new(1, 0, 0, 30)
-    title.BackgroundTransparency = 1
-    title.Text = "Key System"
-    title.TextColor3 = Color3.new(1, 1, 1)
-    title.Font = Enum.Font.GothamBold
-    title.TextSize = 16
-
-    local box = Instance.new("TextBox", frame)
-    box.Size = UDim2.new(1, -20, 0, 32)
-    box.Position = UDim2.fromOffset(10, 40)
-    box.PlaceholderText = "Paste your key here"
-    box.Text = ""
-    box.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    box.TextColor3 = Color3.new(1, 1, 1)
-    box.ClearTextOnFocus = false
-    Instance.new("UICorner", box)
-
-    local status = Instance.new("TextLabel", frame)
-    status.Size = UDim2.new(1, -20, 0, 20)
-    status.Position = UDim2.fromOffset(10, 76)
-    status.BackgroundTransparency = 1
-    status.Text = ""
-    status.TextColor3 = Color3.fromRGB(255, 120, 120)
-    status.TextSize = 13
-
-    local function makeButton(text, x, cb)
-        local b = Instance.new("TextButton", frame)
-        b.Size = UDim2.new(0.5, -15, 0, 32)
-        b.Position = UDim2.new(x, x == 0 and 10 or 5, 0, 110)
-        b.Text = text
-        b.BackgroundColor3 = Color3.fromRGB(60, 90, 200)
-        b.TextColor3 = Color3.new(1, 1, 1)
-        Instance.new("UICorner", b)
-        b.MouseButton1Click:Connect(cb)
-    end
-
-    makeButton("Get Key", 0, function()
-        if setclipboard then setclipboard(GET_KEY_LINK) end
-        status.TextColor3 = Color3.fromRGB(120, 255, 120)
-        status.Text = "Link copied! Paste it in your browser."
-    end)
-
-    makeButton("Check Key", 0.5, function()
-        status.TextColor3 = Color3.fromRGB(255, 255, 120)
-        status.Text = "Checking..."
-        if validateToken(box.Text) then
-            expiresAt = os.time() + KEY_LIFETIME
-            saveKey()
-            passed = true
-            gui:Destroy()
-        else
-            status.TextColor3 = Color3.fromRGB(255, 120, 120)
-            status.Text = "Invalid or expired key."
+    -- Push Atlanta flags into the real player ESP + refresh preview
+    local function refresh()
+        if preview then
+            pcall(function() preview.refresh_elements() end)
         end
-    end)
 
-    repeat task.wait() until passed
-end
-
-----------------------------------------------------
--- SECTION 5: THE GATE
-----------------------------------------------------
-loadSavedKey()
-
-if os.time() >= expiresAt then
-    promptForKey()
-end
-
-if os.time() >= expiresAt then
-    warn("[KeyGate] No valid key, stopping.")
-    return
-end
-
-----------------------------------------------------
--- SECTION 6: SNAPSHOT
-----------------------------------------------------
-local before = {}
-for _, container in ipairs(getContainers()) do
-    for _, v in ipairs(container:GetChildren()) do
-        before[v] = true
-    end
-end
-
-----------------------------------------------------
--- SECTION 7: YOUR UI
-----------------------------------------------------
-
-local function loadLogic()
-    local ok, source = pcall(function()
-        return game:HttpGet(LOGIC_URL)
-    end)
-    if not ok or type(source) ~= "string" or #source == 0 then
-        if readfile and isfile and isfile("Logic.lua") then
-            source = readfile("Logic.lua")
-        else
-            error("Could not load Logic.lua (HttpGet failed and no local copy found)")
-        end
-    end
-
-    local chunk, err = loadstring(source)
-    if not chunk then
-        error("Logic.lua failed to compile: " .. tostring(err))
-    end
-    return chunk()
-end
-
-local Logic = loadLogic()
-
-local library = loadstring(game:GetObjects("rbxassetid://7657867786")[1].Source)()
-
-----------
--- Window + tabs
-----------
-local PepsisWorld = library:CreateWindow({
-    Name = "LizardWare",
-    Themeable = {
-        Info = ""
-    },
-    Theme = [[{"__Designer.Colors.topGradient":"000000","__Designer.Colors.section":"FFFFFF","__Designer.Colors.hoveredOptionBottom":"FFFFFF","__Designer.Background.ImageAssetID":"rbxassetid://4427304036","__Designer.Colors.selectedOption":"000000","__Designer.Colors.unselectedOption":"000000","__Designer.Files.WorkspaceFile":"LizardWare","__Designer.Colors.unhoveredOptionTop":"000000","__Designer.Colors.outerBorder":"FFFFFF","__Designer.Background.ImageColor":"000000","__Designer.Colors.tabText":"FFFFFF","__Designer.Colors.elementBorder":"383838","__Designer.Background.ImageTransparency":0,"__Designer.Colors.innerBorder":"000000","__Designer.Colors.sectionBackground":"000000","__Designer.Colors.bottomGradient":"000000","__Designer.Colors.background":"000000","__Designer.Colors.main":"FFFFFF","__Designer.Colors.otherElementText":"E6E6E6","__Designer.Colors.hoveredOptionTop":"FFFFFF","__Designer.Colors.elementText":"FFFFFF","__Designer.Colors.unhoveredOptionBottom":"000000","__Designer.Background.UseBackgroundImage":false}]]
-})
-
-local GeneralTab = PepsisWorld:CreateTab({ Name = "General" })
-local WorldTab   = PepsisWorld:CreateTab({ Name = "World" })
-local PlayersTab = PepsisWorld:CreateTab({ Name = "Players" })
-local AimTab     = PepsisWorld:CreateTab({ Name = "Aim" })
-
-local ScriptSection        = GeneralTab:CreateSection({ Name = "Script" })
-local Boulder              = GeneralTab:CreateSection({ Name = "Holder" })
-local WorldSection         = WorldTab:CreateSection({ Name = "World" })
-local WorldSettingsSection = WorldTab:CreateSection({ Name = "Settings" })
-local PlayerEspSection     = PlayersTab:CreateSection({ Name = "Player ESP" })
-local SoldierEspSection    = PlayersTab:CreateSection({ Name = "Soldier ESP" })
-local MovementSection      = PlayersTab:CreateSection({ Name = "Movement" })
-local AimSection           = AimTab:CreateSection({ Name = "Soldier Aim Lock" })
-local PlayerAimSection     = AimTab:CreateSection({ Name = "Player Aim Lock" })
-local PredictionSection    = AimTab:CreateSection({ Name = "Prediction" })
-local CameraSection        = AimTab:CreateSection({ Name = "Camera" })
-
-----------
--- ESP flag state (synced into Logic)
-----------
-local espState = {
-    Enabled = false,
-    Names = true,
-    Name_Color = { Color = Color3.fromRGB(255, 255, 255) },
-    Boxes = true,
-    Box_Type = "Corner",
-    Box_Color = { Color = Color3.fromRGB(255, 255, 255) },
-    Healthbar = true,
-    Health_High = { Color = Color3.fromRGB(0, 255, 80) },
-    Health_Low = { Color = Color3.fromRGB(255, 40, 40) },
-    Distance = true,
-    Distance_Color = { Color = Color3.fromRGB(255, 255, 255) },
-    Weapon = true,
-    Weapon_Color = { Color = Color3.fromRGB(255, 255, 255) },
-    Skeletons = false,
-    Skeletons_Color = { Color = Color3.fromRGB(255, 255, 255) },
-}
-
-local function pushEspFlags()
-    if Logic.refreshEspFlags then
-        Logic.refreshEspFlags(espState)
-    end
-end
-
-----------
--- General
-----------
-ScriptSection:AddButton({
-    Name = "Disable Script",
-    Callback = function()
-        Logic.disableAll()
-    end
-})
-
-Boulder:AddToggle({
-    Name = "See Holder",
-    Flag = "Boulder_Holder",
-    Value = false,
-    Callback = function(enabled)
-        Logic.setTrackerEnabled(enabled)
-    end
-})
-
-----------
--- World
-----------
-local worldToggles = {
-    { "Show Nodes",         "Nodes_Toggle",         "Nodes" },
-    { "Show Drops",         "Drops_Toggle",         "Drops" },
-    { "Show Metal Crates",  "Metal_Crates_Toggle",  "Metal Crates" },
-    { "Show Wooden Crates", "Wooden_Crates_Toggle", "Wooden Crates" },
-    { "Show Soldiers",      "Soldiers_Toggle",      "Soldiers" },
-    { "Show Cloth",         "Cloth_Toggle",         "Cloth" },
-}
-
-for _, t in ipairs(worldToggles) do
-    WorldSection:AddToggle({
-        Name = t[1],
-        Flag = t[2],
-        Value = false,
-        Callback = function(enabled)
-            Logic.setWorldToggle(t[3], enabled)
-        end
-    })
-end
-
-WorldSection:AddToggle({
-    Name = "Xray Base",
-    Flag = "Xray_Base_Toggle",
-    Value = false,
-    Callback = function(enabled)
-        Logic.setXray(enabled)
-    end
-})
-
-WorldSettingsSection:AddToggle({
-    Name = "Highlight World Items",
-    Flag = "World_Highlight_Toggle",
-    Value = false,
-    Callback = function(enabled)
-        Logic.setHighlightEnabled(enabled)
-    end
-})
-
-local HighlightDropdown = WorldSettingsSection:AddDropdown({
-    Name = "Highlight Which",
-    Flag = "World_Highlight_Which",
-    List = {"All", "Nodes", "Drops", "Metal Crates", "Wooden Crates", "Soldiers", "Cloth"},
-    Multi = true,
-    Callback = function(selected)
-        Logic.setHighlightSelection(selected)
-    end
-})
-HighlightDropdown:Set({"All"})
-
-WorldSettingsSection:AddColorPicker({
-    Name = "Highlight Color",
-    Flag = "World_Highlight_Color",
-    Value = Color3.fromRGB(0, 255, 200),
-    Callback = function(color)
-        Logic.setHighlightColor(color)
-    end
-})
-
-WorldSettingsSection:AddSlider({
-    Name = "Distance",
-    Flag = "World_Distance",
-    Value = 500,
-    Min = 50,
-    Max = 2000,
-    Format = function(value)
-        return "Distance: " .. tostring(value) .. " studs"
-    end,
-    Callback = function(value)
-        Logic.setDistance(value)
-    end
-})
-
-WorldSettingsSection:AddSlider({
-    Name = "Xray Transparency",
-    Flag = "Xray_Transparency",
-    Value = 70,
-    Min = 0,
-    Max = 100,
-    Format = function(value)
-        return "Xray: " .. tostring(value) .. "%"
-    end,
-    Callback = function(value)
-        Logic.setXrayTransparency(value / 100)
-    end
-})
-
-WorldSettingsSection:AddToggle({
-    Name = "Fullbright (No Fog)",
-    Flag = "Fullbright_Toggle",
-    Value = false,
-    Callback = function(enabled)
-        Logic.setFullbright(enabled)
-    end
-})
-
-----------
--- Player ESP (new ScreenGui system)
-----------
-PlayerEspSection:AddToggle({
-    Name = "Enabled",
-    Flag = "Player_Esp_Toggle",
-    Value = false,
-    Callback = function(enabled)
-        espState.Enabled = enabled
-        pushEspFlags()
-    end
-})
-
-PlayerEspSection:AddToggle({
-    Name = "Boxes",
-    Flag = "Esp_Boxes",
-    Value = true,
-    Callback = function(enabled)
-        espState.Boxes = enabled
-        pushEspFlags()
-    end
-})
-
-PlayerEspSection:AddDropdown({
-    Name = "Box Type",
-    Flag = "Esp_Box_Type",
-    List = {"Corner", "Normal"},
-    Value = "Corner",
-    Multi = false,
-    Callback = function(selected)
-        if type(selected) == "table" then
-            selected = selected[1] or next(selected)
-        end
-        espState.Box_Type = selected or "Corner"
-        pushEspFlags()
-    end
-})
-
-PlayerEspSection:AddColorPicker({
-    Name = "Box Color",
-    Flag = "Esp_Box_Color",
-    Value = Color3.fromRGB(255, 255, 255),
-    Callback = function(color)
-        espState.Box_Color = { Color = color }
-        pushEspFlags()
-    end
-})
-
-PlayerEspSection:AddToggle({
-    Name = "Names",
-    Flag = "Esp_Names",
-    Value = true,
-    Callback = function(enabled)
-        espState.Names = enabled
-        pushEspFlags()
-    end
-})
-
-PlayerEspSection:AddColorPicker({
-    Name = "Name Color",
-    Flag = "Esp_Name_Color",
-    Value = Color3.fromRGB(255, 255, 255),
-    Callback = function(color)
-        espState.Name_Color = { Color = color }
-        pushEspFlags()
-    end
-})
-
-PlayerEspSection:AddToggle({
-    Name = "Healthbar",
-    Flag = "Esp_Healthbar",
-    Value = true,
-    Callback = function(enabled)
-        espState.Healthbar = enabled
-        pushEspFlags()
-    end
-})
-
-PlayerEspSection:AddColorPicker({
-    Name = "Health High",
-    Flag = "Esp_Health_High",
-    Value = Color3.fromRGB(0, 255, 80),
-    Callback = function(color)
-        espState.Health_High = { Color = color }
-        pushEspFlags()
-    end
-})
-
-PlayerEspSection:AddColorPicker({
-    Name = "Health Low",
-    Flag = "Esp_Health_Low",
-    Value = Color3.fromRGB(255, 40, 40),
-    Callback = function(color)
-        espState.Health_Low = { Color = color }
-        pushEspFlags()
-    end
-})
-
-PlayerEspSection:AddToggle({
-    Name = "Distance",
-    Flag = "Esp_Distance",
-    Value = true,
-    Callback = function(enabled)
-        espState.Distance = enabled
-        pushEspFlags()
-    end
-})
-
-PlayerEspSection:AddColorPicker({
-    Name = "Distance Color",
-    Flag = "Esp_Distance_Color",
-    Value = Color3.fromRGB(255, 255, 255),
-    Callback = function(color)
-        espState.Distance_Color = { Color = color }
-        pushEspFlags()
-    end
-})
-
-PlayerEspSection:AddToggle({
-    Name = "Weapon",
-    Flag = "Esp_Weapon",
-    Value = true,
-    Callback = function(enabled)
-        espState.Weapon = enabled
-        pushEspFlags()
-    end
-})
-
-PlayerEspSection:AddColorPicker({
-    Name = "Weapon Color",
-    Flag = "Esp_Weapon_Color",
-    Value = Color3.fromRGB(255, 255, 255),
-    Callback = function(color)
-        espState.Weapon_Color = { Color = color }
-        pushEspFlags()
-    end
-})
-
-PlayerEspSection:AddToggle({
-    Name = "Skeletons",
-    Flag = "Esp_Skeletons",
-    Value = false,
-    Callback = function(enabled)
-        espState.Skeletons = enabled
-        pushEspFlags()
-    end
-})
-
-PlayerEspSection:AddColorPicker({
-    Name = "Skeleton Color",
-    Flag = "Esp_Skeleton_Color",
-    Value = Color3.fromRGB(255, 255, 255),
-    Callback = function(color)
-        espState.Skeletons_Color = { Color = color }
-        pushEspFlags()
-    end
-})
-
-PlayerEspSection:AddToggle({
-    Name = "Team Check (ESP + Aim)",
-    Flag = "Team_Check_Toggle",
-    Value = false,
-    Callback = function(enabled)
-        Logic.setTeamCheck(enabled)
-    end
-})
-
-----------
--- Soldier ESP (old Drawing boxes)
-----------
-SoldierEspSection:AddToggle({
-    Name = "Soldier Corner Box ESP",
-    Flag = "Soldier_Esp_Toggle",
-    Value = false,
-    Callback = function(enabled)
-        Logic.setSoldierBox(enabled)
-    end
-})
-
-SoldierEspSection:AddSlider({
-    Name = "Box Y Offset",
-    Flag = "Box_Y_Offset",
-    Value = 0,
-    Min = -60,
-    Max = 60,
-    Format = function(value)
-        return "Y Offset: " .. tostring(value) .. " px"
-    end,
-    Callback = function(value)
-        Logic.setBoxYOffset(value)
-    end
-})
-
-SoldierEspSection:AddToggle({
-    Name = "Visibility Check (Green = Visible, Red = Hidden)",
-    Flag = "Vis_Check_Toggle",
-    Value = true,
-    Callback = function(enabled)
-        Logic.setVisibilityCheck(enabled)
-    end
-})
-
-SoldierEspSection:AddColorPicker({
-    Name = "Visible Color",
-    Flag = "Vis_Color_Visible",
-    Value = Color3.fromRGB(0, 255, 80),
-    Callback = function(color)
-        Logic.setVisibleColor(color)
-    end
-})
-
-SoldierEspSection:AddColorPicker({
-    Name = "Hidden Color",
-    Flag = "Vis_Color_Hidden",
-    Value = Color3.fromRGB(255, 40, 40),
-    Callback = function(color)
-        Logic.setHiddenColor(color)
-    end
-})
-
-----------
--- Movement
-----------
-MovementSection:AddToggle({
-    Name = "Walk Speed",
-    Flag = "Speed_Toggle",
-    Value = false,
-    Callback = function(enabled)
-        Logic.setSpeed(enabled)
-    end
-})
-
-MovementSection:AddSlider({
-    Name = "Walk Speed Value",
-    Flag = "Speed_Value",
-    Value = 32,
-    Min = 16,
-    Max = 150,
-    Format = function(value)
-        return "Speed: " .. tostring(value)
-    end,
-    Callback = function(value)
-        Logic.setWalkSpeed(value)
-    end
-})
-
-MovementSection:AddToggle({
-    Name = "Infinite Jump",
-    Flag = "Inf_Jump_Toggle",
-    Value = false,
-    Callback = function(enabled)
-        Logic.setInfiniteJump(enabled)
-    end
-})
-
-MovementSection:AddToggle({
-    Name = "Fly (WASD, Space up, Ctrl/Shift down)",
-    Flag = "Fly_Toggle",
-    Value = false,
-    Callback = function(enabled)
-        Logic.setFly(enabled)
-    end
-})
-
-MovementSection:AddSlider({
-    Name = "Fly Speed",
-    Flag = "Fly_Speed",
-    Value = 60,
-    Min = 10,
-    Max = 300,
-    Format = function(value)
-        return "Fly: " .. tostring(value)
-    end,
-    Callback = function(value)
-        Logic.setFlySpeed(value)
-    end
-})
-
-MovementSection:AddToggle({
-    Name = "Noclip",
-    Flag = "Noclip_Toggle",
-    Value = false,
-    Callback = function(enabled)
-        Logic.setNoclip(enabled)
-    end
-})
-
-----------
--- Aim: soldiers
-----------
-AimSection:AddToggle({
-    Name = "Aim Lock Soldiers (Hold Right Click)",
-    Flag = "Aim_Lock_Toggle",
-    Value = false,
-    Callback = function(enabled)
-        Logic.setAimLock(enabled)
-    end
-})
-
-AimSection:AddToggle({
-    Name = "Show FOV Circle",
-    Flag = "Fov_Circle_Toggle",
-    Value = false,
-    Callback = function(enabled)
-        Logic.setFovCircle(enabled)
-    end
-})
-
-AimSection:AddDropdown({
-    Name = "Soldier Aim Part",
-    Flag = "Aim_Part",
-    List = {"Head", "Chest", "Waist"},
-    Value = "Head",
-    Multi = false,
-    Callback = function(selected)
-        Logic.setSoldierAimPart(selected)
-    end
-})
-
-AimSection:AddSlider({
-    Name = "FOV Radius",
-    Flag = "Aim_Fov",
-    Value = 150,
-    Min = 20,
-    Max = 600,
-    Format = function(value)
-        return "FOV: " .. tostring(value) .. " px"
-    end,
-    Callback = function(value)
-        Logic.setFov(value)
-    end
-})
-
-AimSection:AddSlider({
-    Name = "Smoothness",
-    Flag = "Aim_Smoothness",
-    Value = 20,
-    Min = 0,
-    Max = 95,
-    Format = function(value)
-        return "Smoothness: " .. tostring(value)
-    end,
-    Callback = function(value)
-        Logic.setSmoothness(value)
-    end
-})
-
-----------
--- Aim: players
-----------
-PlayerAimSection:AddToggle({
-    Name = "Aim Lock Players (Hold Right Click)",
-    Flag = "Player_Aim_Lock_Toggle",
-    Value = false,
-    Callback = function(enabled)
-        Logic.setPlayerAim(enabled)
-    end
-})
-
-PlayerAimSection:AddDropdown({
-    Name = "Player Aim Part",
-    Flag = "Player_Aim_Part",
-    List = {"Head", "Chest", "Waist"},
-    Value = "Head",
-    Multi = false,
-    Callback = function(selected)
-        Logic.setPlayerAimPart(selected)
-    end
-})
-
-----------
--- Prediction
-----------
-PredictionSection:AddToggle({
-    Name = "Prediction (Lead + Bullet Drop)",
-    Flag = "Prediction_Toggle",
-    Value = false,
-    Callback = function(enabled)
-        Logic.setPrediction(enabled)
-    end
-})
-
-PredictionSection:AddSlider({
-    Name = "Bullet Speed",
-    Flag = "Bullet_Speed",
-    Value = 1000,
-    Min = 50,
-    Max = 5000,
-    Format = function(value)
-        return "Speed: " .. tostring(value) .. " studs/s"
-    end,
-    Callback = function(value)
-        Logic.setBulletSpeed(value)
-    end
-})
-
-PredictionSection:AddSlider({
-    Name = "Bullet Drop",
-    Flag = "Bullet_Drop",
-    Value = 0,
-    Min = 0,
-    Max = 400,
-    Format = function(value)
-        return "Drop: " .. tostring(value) .. " (0 = off)"
-    end,
-    Callback = function(value)
-        Logic.setBulletDrop(value)
-    end
-})
-
-----------
--- Camera
-----------
-CameraSection:AddToggle({
-    Name = "FOV Changer",
-    Flag = "Fov_Changer_Toggle",
-    Value = false,
-    Callback = function(enabled)
-        Logic.setFovChanger(enabled)
-    end
-})
-
-CameraSection:AddSlider({
-    Name = "Camera FOV",
-    Flag = "Camera_Fov",
-    Value = 70,
-    Min = 30,
-    Max = 400,
-    Format = function(value)
-        return "FOV: " .. tostring(value)
-    end,
-    Callback = function(value)
-        Logic.setCustomFov(value)
-    end
-})
-
-CameraSection:AddToggle({
-    Name = "Zoom",
-    Flag = "Zoom_Toggle",
-    Value = false,
-    Callback = function(enabled)
-        Logic.setZoomEnabled(enabled)
-    end
-})
-
-CameraSection:AddDropdown({
-    Name = "Zoom Mode",
-    Flag = "Zoom_Mode",
-    List = {"Hold", "Toggle"},
-    Value = "Hold",
-    Multi = false,
-    Callback = function(selected)
-        Logic.setZoomMode(selected)
-    end
-})
-
-CameraSection:AddDropdown({
-    Name = "Zoom Key",
-    Flag = "Zoom_Key",
-    List = {"Z", "X", "C", "V", "B", "Q", "E", "F", "G", "LeftAlt"},
-    Value = "Z",
-    Multi = false,
-    Callback = function(selected)
-        Logic.setZoomKey(selected)
-    end
-})
-
-CameraSection:AddSlider({
-    Name = "Zoom FOV",
-    Flag = "Zoom_Fov",
-    Value = 20,
-    Min = -100,
-    Max = 60,
-    Format = function(value)
-        return "Zoom FOV: " .. tostring(value)
-    end,
-    Callback = function(value)
-        Logic.setZoomFov(value)
-    end
-})
-
-----------------------------------------------------
--- SECTION 8: NOTIFICATIONS + UNLOAD WHEN KEY EXPIRES
-----------------------------------------------------
-local TweenService = game:GetService("TweenService")
-
-local function notify(titleText, bodyText, duration, color)
-    duration = duration or 6
-    color = color or Color3.fromRGB(255, 90, 90)
-
-    local gui = Instance.new("ScreenGui")
-    gui.Name = "LizardWareNotify"
-    gui.ResetOnSpawn = false
-    gui.Parent = guiParent
-
-    local frame = Instance.new("Frame", gui)
-    frame.Size = UDim2.fromOffset(300, 80)
-    frame.Position = UDim2.new(1, 320, 1, -100)
-    frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    frame.BorderSizePixel = 0
-    Instance.new("UICorner", frame)
-
-    local stroke = Instance.new("UIStroke", frame)
-    stroke.Color = color
-    stroke.Thickness = 1.5
-
-    local title = Instance.new("TextLabel", frame)
-    title.Size = UDim2.new(1, -20, 0, 28)
-    title.Position = UDim2.fromOffset(10, 6)
-    title.BackgroundTransparency = 1
-    title.Text = titleText
-    title.TextColor3 = color
-    title.Font = Enum.Font.GothamBold
-    title.TextSize = 16
-    title.TextXAlignment = Enum.TextXAlignment.Left
-
-    local body = Instance.new("TextLabel", frame)
-    body.Size = UDim2.new(1, -20, 0, 40)
-    body.Position = UDim2.fromOffset(10, 34)
-    body.BackgroundTransparency = 1
-    body.Text = bodyText
-    body.TextColor3 = Color3.new(1, 1, 1)
-    body.Font = Enum.Font.Gotham
-    body.TextSize = 13
-    body.TextWrapped = true
-    body.TextXAlignment = Enum.TextXAlignment.Left
-    body.TextYAlignment = Enum.TextYAlignment.Top
-
-    TweenService:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        Position = UDim2.new(1, -320, 1, -100)
-    }):Play()
-
-    task.delay(duration, function()
-        local out = TweenService:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-            Position = UDim2.new(1, 320, 1, -100)
-        })
-        out:Play()
-        out.Completed:Wait()
-        gui:Destroy()
-    end)
-end
-
-local function formatTime(seconds)
-    if seconds >= 3600 then
-        return string.format("%.1f hours", seconds / 3600)
-    elseif seconds >= 60 then
-        return math.floor(seconds / 60) .. " minutes"
-    end
-    return math.floor(seconds) .. " seconds"
-end
-
-local function unloadAll()
-    for _, name in ipairs({ "Unload", "Destroy", "Close" }) do
-        if type(library) == "table" and type(library[name]) == "function" then
-            pcall(library[name], library)
-        end
-    end
-    for _, container in ipairs(getContainers()) do
-        for _, v in ipairs(container:GetChildren()) do
-            if not before[v] then
-                pcall(function() v:Destroy() end)
+        if Logic.refreshEspFlags then
+            local flags = library.flags or {}
+            local function col(flag, fallback)
+                local v = flags[flag]
+                if typeof(v) == "Color3" then return v end
+                if type(v) == "table" and typeof(v.Color) == "Color3" then return v.Color end
+                return fallback
             end
+
+            Logic.refreshEspFlags({
+                Enabled         = flags["Enabled"] ~= false, -- master on/off from "Show Preview" / Enabled
+                Names           = flags["Names"] ~= false,
+                Name_Color      = { Color = col("Name_Color", Color3.fromRGB(255, 255, 255)) },
+                Boxes           = flags["Boxes"] ~= false,
+                Box_Type        = (flags["Box_Type"] == "Box" and "Normal") or (flags["Box_Type"] or "Corner"),
+                Box_Color       = { Color = col("Box_Color", Color3.fromRGB(255, 255, 255)) },
+                Healthbar       = flags["Healthbar"] ~= false,
+                Health_High     = { Color = col("Health_High", Color3.fromRGB(0, 255, 80)) },
+                Health_Low      = { Color = col("Health_Low", Color3.fromRGB(255, 40, 40)) },
+                Distance        = flags["Distance"] ~= false,
+                Distance_Color  = { Color = col("Distance_Color", Color3.fromRGB(255, 255, 255)) },
+                Weapon          = flags["Weapon"] ~= false,
+                Weapon_Color    = { Color = col("Weapon_Color", Color3.fromRGB(255, 255, 255)) },
+                Skeletons       = flags["Skeletons"] == true,
+                Skeletons_Color = { Color = col("Skeletons_Color", Color3.fromRGB(255, 255, 255)) },
+            })
         end
     end
-    notify("Key Expired", "Your key has run out. Re-run the script to get a new one.", 8)
+
+    local player = game.Players.LocalPlayer
+    local function ensureAnimate(char)
+        if char and not char:FindFirstChild("Animate") then
+            local dummy = Instance.new("LocalScript")
+            dummy.Name = "Animate"
+            dummy.Parent = char
+        end
+    end
+    if player.Character then
+        ensureAnimate(player.Character)
+    end
+    player.CharacterAdded:Connect(ensureAnimate)
+
+    local pv = column2:section({name = "Player ESP", toggle = false})
+
+    -- These flags drive BOTH the library preview AND the live ScreenGui ESP
+    pv:toggle({name = "Enabled", flag = "Enabled", enabled = true, default = true, callback = refresh})
+    pv:toggle({name = "Boxes", flag = "Boxes", enabled = true, default = true, callback = refresh})
+        :colorpicker({name = "Box", flag = "Box_Color", color = Color3.fromRGB(255, 255, 255), callback = refresh})
+    pv:dropdown({name = "Box Type", flag = "Box_Type", items = {"Corner", "Box"}, default = "Corner", callback = refresh})
+    pv:toggle({name = "Names", flag = "Names", enabled = true, default = true, callback = refresh})
+        :colorpicker({name = "Name", flag = "Name_Color", color = Color3.fromRGB(255, 255, 255), callback = refresh})
+    pv:toggle({name = "Healthbar", flag = "Healthbar", enabled = true, default = true, callback = refresh})
+    pv:label({name = "Health Low"})
+        :colorpicker({name = "Low", flag = "Health_Low", color = Color3.fromRGB(255, 40, 40), callback = refresh})
+    pv:label({name = "Health High"})
+        :colorpicker({name = "High", flag = "Health_High", color = Color3.fromRGB(0, 255, 80), callback = refresh})
+    pv:toggle({name = "Distance", flag = "Distance", enabled = true, default = true, callback = refresh})
+        :colorpicker({name = "Distance", flag = "Distance_Color", color = Color3.fromRGB(255, 255, 255), callback = refresh})
+    pv:toggle({name = "Weapon", flag = "Weapon", enabled = true, default = true, callback = refresh})
+        :colorpicker({name = "Weapon", flag = "Weapon_Color", color = Color3.fromRGB(255, 255, 255), callback = refresh})
+    pv:toggle({name = "Skeletons", flag = "Skeletons", enabled = true, default = false, callback = refresh})
+        :colorpicker({name = "Skeleton", flag = "Skeletons_Color", color = Color3.fromRGB(255, 255, 255), callback = refresh})
+
+    local ok, result = pcall(function()
+        return window.esp_section:esp_preview({})
+    end)
+
+    if ok and result then
+        preview = result
+        preview.items.viewportframe.Ambient = Color3.fromRGB(190, 190, 190)
+        preview.items.viewportframe.LightColor = Color3.fromRGB(255, 255, 255)
+        preview.refresh_elements()
+    else
+        warn("[Pepsi's World] ESP preview failed: " .. tostring(result))
+    end
+
+    -- Push defaults once UI is built
+    task.defer(refresh)
 end
 
-task.spawn(function()
-    local warnAt = expiresAt - (KEY_LIFETIME / 2)
-    if warnAt > os.time() then
-        while os.time() < warnAt do task.wait(1) end
-        local left = expiresAt - os.time()
-        notify("Key Expiring", "Your key expires in " .. formatTime(left) .. ".", 6, Color3.fromRGB(255, 200, 80))
-    end
-end)
+------------------------------------------------------------
+-- World ESP
+------------------------------------------------------------
+do
+    local column = World:column()
+    local esp = column:section({name = "World ESP", toggle = false})
 
-task.spawn(function()
-    while os.time() < expiresAt do
-        task.wait(1)
-    end
-    Logic.disableAll()
-    unloadAll()
-end)
+    esp:toggle({name = "Nodes", flag = "esp_nodes", callback = function(v) Logic.setWorldToggle("Nodes", v) end})
+    esp:toggle({name = "Drops", flag = "esp_drops", callback = function(v) Logic.setWorldToggle("Drops", v) end})
+    esp:toggle({name = "Metal Crates", flag = "esp_metal", callback = function(v) Logic.setWorldToggle("Metal Crates", v) end})
+    esp:toggle({name = "Wooden Crates", flag = "esp_wood", callback = function(v) Logic.setWorldToggle("Wooden Crates", v) end})
+    esp:toggle({name = "Soldiers", flag = "esp_soldiers", callback = function(v) Logic.setWorldToggle("Soldiers", v) end})
+    esp:toggle({name = "Cloth", flag = "esp_cloth", callback = function(v) Logic.setWorldToggle("Cloth", v) end})
+    esp:slider({name = "Max Distance", flag = "world_distance", min = 50, max = 3000, default = 500, interval = 10, suffix = " studs", callback = Logic.setDistance})
+
+    local column2 = World:column()
+    local hl = column2:section({name = "Highlights", toggle = false})
+
+    hl:toggle({name = "Enabled", flag = "hl_enabled", callback = Logic.setHighlightEnabled})
+        :colorpicker({name = "Highlight Color", flag = "hl_color", color = Color3.fromRGB(0, 255, 200), callback = Logic.setHighlightColor})
+    hl:dropdown({
+        name = "Categories", flag = "hl_selection", multi = true, default = {"All"},
+        items = {"All", "Nodes", "Drops", "Metal Crates", "Wooden Crates", "Soldiers", "Cloth"},
+        callback = Logic.setHighlightSelection,
+    })
+
+    local xray = column2:section({name = "Base Xray", toggle = false})
+    xray:toggle({name = "Enabled", flag = "xray", callback = Logic.setXray})
+    xray:slider({name = "Transparency", flag = "xray_transparency", min = 0, max = 1, default = 0.7, interval = 0.05, callback = Logic.setXrayTransparency})
+end
+
+------------------------------------------------------------
+-- Movement
+------------------------------------------------------------
+do
+    local column = Movement:column()
+    local move = column:section({name = "Movement", toggle = false})
+
+    move:toggle({name = "Speed", flag = "speed", callback = Logic.setSpeed})
+    move:slider({name = "Walk Speed", flag = "walk_speed", min = 16, max = 200, default = 32, interval = 1, callback = Logic.setWalkSpeed})
+    move:toggle({name = "Infinite Jump", flag = "inf_jump", callback = Logic.setInfiniteJump})
+    move:toggle({name = "Noclip", flag = "noclip", callback = Logic.setNoclip})
+    move:toggle({name = "Fly", flag = "fly", tooltip = "WASD + Space up, Ctrl/Shift down", callback = Logic.setFly})
+    move:slider({name = "Fly Speed", flag = "fly_speed", min = 10, max = 300, default = 60, interval = 1, callback = Logic.setFlySpeed})
+
+    local column2 = Movement:column()
+    local cam = column2:section({name = "Camera", toggle = false})
+
+    cam:toggle({name = "FOV Changer", flag = "fov_changer", callback = Logic.setFovChanger})
+    cam:slider({name = "Field Of View", flag = "custom_fov", min = -500, max = 320, default = 70, interval = 1, callback = Logic.setCustomFov})
+    cam:toggle({name = "Zoom", flag = "zoom", callback = Logic.setZoomEnabled})
+    cam:slider({name = "Zoom FOV", flag = "zoom_fov", min = -500, max = 320, default = 20, interval = 1, callback = Logic.setZoomFov})
+    cam:dropdown({name = "Zoom Mode", flag = "zoom_mode", items = {"Hold", "Toggle"}, default = "Hold", callback = Logic.setZoomMode})
+    cam:dropdown({name = "Zoom Key", flag = "zoom_key", items = {"Z", "X", "C", "V", "B", "Q", "E", "F"}, default = "Z", callback = Logic.setZoomKey})
+end
+
+------------------------------------------------------------
+-- Misc
+------------------------------------------------------------
+do
+    local column = Misc:column()
+    local misc = column:section({name = "Misc", toggle = false})
+
+    misc:toggle({name = "See Holder (prints to console)", flag = "see_holder", callback = Logic.setTrackerEnabled})
+    misc:toggle({name = "Fullbright", flag = "fullbright", callback = Logic.setFullbright})
+    misc:button({name = "Disable Script", callback = function()
+        Logic.disableAll()
+        if library.unload then
+            library:unload()
+        end
+    end})
+end
+
+Aiming.open_tab()
+
+------------------------------------------------------------
+-- Initialisation
+------------------------------------------------------------
+library:config_list_update()
+
+for index, value in themes.preset do
+    pcall(function()
+        library:update_theme(index, value)
+    end)
+end
+
+task.wait()
+
+library.old_config = library:get_config()
