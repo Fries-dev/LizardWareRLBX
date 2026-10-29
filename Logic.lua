@@ -1103,14 +1103,14 @@ do
             
             print("Tool detected for UI:", item.Name)
             
-            -- Force update the text directly
-            if objects["weapon"] then
+            -- Make sure both the weapon object and holder exist before setting properties
+            if objects["weapon"] and objects["holder"] then
                 objects["weapon"].Text = item.Name
-                -- Force it to parent to the holder so it becomes visible on screen
                 objects["weapon"].Parent = objects["holder"]
+            else
+                warn("objects['weapon'] or objects['holder'] is nil! Check your table definitions.")
             end
         end
-
         data.refresh_descendants = function()
             local character = player.Character
             if not character then return end
