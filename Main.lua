@@ -57,10 +57,7 @@ local function loadSavedKey()
         pcall(delfile, KEY_FILE) -- expired or invalid, clean it up
     end
 end
-loadSavedKey()           -- <-- add this line
-if os.time() >= expiresAt then
-    promptForKey()
-end
+
 local function validateToken(token)
     if not httpRequest or token == "" then return false end
     local ok, res = pcall(function()
@@ -152,6 +149,8 @@ end
 ----------------------------------------------------
 -- SECTION 5: THE GATE (runs once, before anything loads)
 ----------------------------------------------------
+loadSavedKey()           -- <-- new line
+
 if os.time() >= expiresAt then
     promptForKey()
 end
