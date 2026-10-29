@@ -780,7 +780,10 @@ local bones = {
     {"LeftUpperLeg", "LeftLowerLeg"},
     {"RightUpperLeg", "RightLowerLeg"},
 }
-
+local objects = {
+    ["holder"] = script.Parent:WaitForChild("Holder"),
+    ["weapon"] = script.Parent:WaitForChild("Holder"):WaitForChild("WeaponLabel")
+}
 local espFlags = {
     ["Enabled"] = true,
     ["Names"] = true,
@@ -1101,14 +1104,9 @@ do
         data.tool_added = function(item)
             if not item:IsA("Tool") then return end
             
-            print("Tool detected for UI:", item.Name)
-            
-            -- Make sure both the weapon object and holder exist before setting properties
             if objects["weapon"] and objects["holder"] then
                 objects["weapon"].Text = item.Name
                 objects["weapon"].Parent = objects["holder"]
-            else
-                warn("objects['weapon'] or objects['holder'] is nil! Check your table definitions.")
             end
         end
         data.refresh_descendants = function()
