@@ -1120,15 +1120,15 @@ do
         end
 
         data.tool_added = function(item)
-            -- Find the character from the item's parent
-            local character = item and item.Parent
+            -- Guard against nil items to prevent "attempt to index nil with 'Parent'"
+            if not item then return end
+            
+            local character = item.Parent
             if not character or not character:IsA("Model") then return end
 
-            -- Get all handled items currently on the character
             local items = getHandledItems(character)
             local currentText = #items > 0 and table.concat(items, ", ") or "No handled items"
 
-            -- Update your UI objects
             if objects["weapon"] and objects["holder"] then
                 objects["weapon"].Text = currentText
                 objects["weapon"].Parent = objects["holder"]
