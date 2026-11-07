@@ -138,6 +138,8 @@ end
 local function MakeDraggable(Handle, Target)
     local Dragging = false
     local DragStart, StartPosition
+    
+    -- Only trigger dragging when clicking/touching the top header handle
     Handle.InputBegan:Connect(function(Input)
         if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
             Dragging = true
@@ -145,18 +147,21 @@ local function MakeDraggable(Handle, Target)
             StartPosition = Target.Position
         end
     end)
+    
     UserInputService.InputChanged:Connect(function(Input)
         if Dragging and (Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch) then
             local Delta = Input.Position - DragStart
             Target.Position = UDim2New(StartPosition.X.Scale, StartPosition.X.Offset + Delta.X, StartPosition.Y.Scale, StartPosition.Y.Offset + Delta.Y)
         end
     end)
+    
     UserInputService.InputEnded:Connect(function(Input)
         if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
             Dragging = false
         end
     end)
 end
+
 
 function Library:SetTheme(Name)
     if Themes[Name] then
@@ -284,11 +289,13 @@ Library.Holder = Create("ScreenGui", {
     Parent = (gethui and gethui()) or CoreGui
 })
 
+
 function Library:Window(Data)
     Data = Data or {}
     local WindowSize = Data.Size or UDim2New(0, 686, 0, 678)
     local WindowClass = { Pages = {} }
 
+    -- Main Frame centered with scale/offset support for multiple devices
     local MainFrame = Create("Frame", {
         Name = "Window",
         Parent = self.Holder,
@@ -299,7 +306,17 @@ function Library:Window(Data)
         Active = true
     })
     GradientStroke(MainFrame, 2)
-    MakeDraggable(MainFrame, MainFrame)
+
+    local Header = Create("Frame", {
+        Name = "Header",
+        Parent = MainFrame,
+        Position = UDim2New(0, 12, 0, 12),
+        Size = UDim2New(1, -24, 0, 48),
+        BackgroundTransparency = 1
+    })
+
+    -- Pass ONLY the Header frame to MakeDraggable so users can only drag from the top bar!
+    MakeDraggable(Header, MainFrame)
 
     local Header = Create("Frame", {
         Name = "Header",
