@@ -274,7 +274,7 @@ function Logic.Init(Library, SETTINGS)
     resizeHandle.BackgroundColor3 = Color3.fromRGB(180, 180, 180)
     resizeHandle.BackgroundTransparency = 0.25
     resizeHandle.BorderSizePixel = 0
-    resizeHandle.ZIndex = 20
+    resizeHandle.ZIndex = 25
     resizeHandle.Active = true
     resizeHandle.Parent = frame
 
@@ -356,7 +356,7 @@ function Logic.Init(Library, SETTINGS)
     clampToScreen()
 
     -------------------------------------------------
-    -- Input: drag, resize, toggle key, viewport changes
+    -- Robust Drag & Resize Input Handling
     -------------------------------------------------
     local function connect(signal, fn)
         local c = signal:Connect(fn)
@@ -364,54 +364,58 @@ function Logic.Init(Library, SETTINGS)
         return c
     end
 
-    local isResizing, resizeStartMouse, resizeStartSize = false, nil, nil
-    local dragging, dragStartMouse, dragStartPos = false, nil, nil
+    local dragging, dragInput, dragStart, startPos = false, nil, nil, nil
+    local resizing, resizeInput, resizeStart, startSize = false, nil, nil, nil
 
-    local function isPress(input)
-        return input.UserInputType == Enum.UserInputType.MouseButton1
-            or input.UserInputType == Enum.UserInputType.Touch
-    end
+    connect(header.InputBegan, function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and not armorSettings.LockPosition then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    connect(header.InputChanged, function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
 
     connect(resizeHandle.InputBegan, function(input)
-        if isPress(input) and not armorSettings.LockPosition then
-            isResizing = true
-            dragging = false
-            resizeStartMouse = UserInputService:GetMouseLocation()
-            resizeStartSize = Vector2.new(baseW * curScale, baseH * curScale)
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and not armorSettings.LockPosition then
+            resizing = true
+            resizeStart = input.Position
+            startSize = Vector2.new(baseW * curScale, baseH * curScale)
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    resizing = false
+                end
+            end)
         end
     end)
 
-    -- Dragging from the Header bar
-    connect(header.InputBegan, function(input)
-        if isPress(input) and not isResizing and not armorSettings.LockPosition then
-            dragging = true
-            dragStartMouse = UserInputService:GetMouseLocation()
-            dragStartPos = Vector2.new(frame.Position.X.Offset, frame.Position.Y.Offset)
-        end
-    end)
-
-    connect(UserInputService.InputEnded, function(input)
-        if isPress(input) then
-            isResizing = false
-            dragging = false
+    connect(resizeHandle.InputChanged, function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            resizeInput = input
         end
     end)
 
     connect(UserInputService.InputChanged, function(input)
-        if input.UserInputType ~= Enum.UserInputType.MouseMovement
-            and input.UserInputType ~= Enum.UserInputType.Touch then return end
-
-        local mouse = UserInputService:GetMouseLocation()
-        if isResizing then
-            local delta = mouse - resizeStartMouse
-            local f = screenFactor()
-            local sx = (resizeStartSize.X + delta.X) / (baseW * f)
-            local sy = (resizeStartSize.Y + delta.Y) / (baseH * f)
-            applyScale(math.max(sx, sy))
+        if dragging and input == dragInput then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
             clampToScreen()
-        elseif dragging then
-            local delta = mouse - dragStartMouse
-            frame.Position = UDim2.fromOffset(dragStartPos.X + delta.X, dragStartPos.Y + delta.Y)
+        elseif resizing and input == resizeInput then
+            local delta = input.Position - resizeStart
+            local f = screenFactor()
+            local sx = (startSize.X + delta.X) / (baseW * f)
+            local sy = (startSize.Y + delta.Y) / (baseH * f)
+            applyScale(math.max(sx, sy))
             clampToScreen()
         end
     end)
