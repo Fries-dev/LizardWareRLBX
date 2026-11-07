@@ -1,6 +1,5 @@
 --[[
-    Slot UI - Logic Module
-    Handles backend features and binds them to UI library flags.
+    Slot UI - Logic Module (logic.lua)
 ]]
 
 local Logic = {}
@@ -12,29 +11,39 @@ local Workspace = game:GetService("Workspace")
 local Camera = Workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
-function Logic.Init(LibraryInstance)
-    local Library = LibraryInstance or _G.Library
+function Logic.Init(Library, SETTINGS)
     if not Library then
-        warn("[Logic]: Library instance not found!")
+        warn("[Logic]: Library instance missing!")
         return
     end
 
-    -- Run-loop for real-time feature updates (like FOV)
+    -- Real-time feature loop
     RunService.RenderStepped:Connect(function()
-        -- FOV Logic Feature
-        local TargetFOV = Library.Flags["Aim_FOV"]
-        if TargetFOV and Camera then
-            Camera.FieldOfView = TargetFOV
+        if SETTINGS and SETTINGS.Fov and SETTINGS.Fov.Enabled then
+            local targetFOV = Library.Flags["Aim_FOV"] or SETTINGS.Fov.Value
+            if Camera then
+                Camera.FieldOfView = targetFOV
+            end
         end
-        
-        -- You can add more feature checks here later, e.g.:
-        -- local speedVal = Library.Flags["Move_Speed"]
-        -- if speedVal and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        --     LocalPlayer.Character.Humanoid.WalkSpeed = speedVal
-        -- end
     end)
 
-    print("[Logic Module]: Successfully initialized and bound to UI flags.")
+    print("[Logic Module]: Initialized successfully.")
+end
+
+-- Function to turn off and reset all active features
+function Logic.DisableAll(SETTINGS)
+    if SETTINGS then
+        -- Reset FOV
+        if SETTINGS.Fov then
+            SETTINGS.Fov.Enabled = false
+            if Camera then
+                Camera.FieldOfView = SETTINGS.Fov.Base
+            end
+        end
+        
+        -- Add future feature resets here (e.g., speed, ESP, etc.)
+    end
+    print("[Logic Module]: All features disabled and reset to default.")
 end
 
 return Logic
