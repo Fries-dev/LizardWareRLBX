@@ -1,5 +1,10 @@
 --[[
-    Slot UI Library
+    Slot UI Library (Complete Version)
+    API style based on samet.exe's library, visuals rebuilt from Slot_Logo.rbxmx
+    (686x678 window, gradient strokes, header with logo / tabs / X, two-column sections)
+
+    Assign a different Flag to every element so configs don't override each other.
+    Callbacks fire on change. Read the starting value from Library.Flags[Flag].
 ]]
 
 local Env = (getgenv and getgenv()) or _G
@@ -17,13 +22,14 @@ local UserInputService = GetService("UserInputService")
 local HttpService = GetService("HttpService")
 local TweenService = GetService("TweenService")
 local CoreGui = GetService("CoreGui")
+local TextService = GetService("TextService")
 
 local Vector2New = Vector2.new
 local UDim2New = UDim2.new
 local UDimNew = UDim.new
 local FromRGB = Color3.fromRGB
 
-local SlotGradient = ColorSequence.new({
+local DefaultGradient = ColorSequence.new({
     ColorSequenceKeypoint.new(0, Color3.new(0.09, 0.27, 0.38)),
     ColorSequenceKeypoint.new(0.15, Color3.new(0.81, 0.84, 0.87)),
     ColorSequenceKeypoint.new(0.43, Color3.new(0.10, 0.33, 0.47)),
@@ -32,19 +38,70 @@ local SlotGradient = ColorSequence.new({
     ColorSequenceKeypoint.new(1, Color3.new(0.45, 0.76, 0.16)),
 })
 
-local Library = {
-    Flags = {},
-    Theme = {
+local Themes = {
+    Slot = {
         Background = FromRGB(40, 40, 40),
         Inline = FromRGB(28, 28, 28),
         Element = FromRGB(56, 56, 56),
+        Border = FromRGB(75, 75, 75),
+        Outline = FromRGB(18, 18, 18),
         Text = FromRGB(171, 171, 171),
         TextActive = FromRGB(255, 255, 255),
-        Close = FromRGB(200, 60, 60),
+        Risky = FromRGB(205, 70, 70),
+        Close = FromRGB(166, 53, 53),
         Accent = FromRGB(24, 105, 164),
     },
-    Font = Font.new("rbxasset://fonts/families/Inter.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+    Emerald = {
+        Background = FromRGB(30, 40, 35),
+        Inline = FromRGB(20, 28, 24),
+        Element = FromRGB(42, 56, 48),
+        Border = FromRGB(60, 80, 70),
+        Outline = FromRGB(12, 18, 15),
+        Text = FromRGB(160, 180, 170),
+        TextActive = FromRGB(255, 255, 255),
+        Risky = FromRGB(205, 70, 70),
+        Close = FromRGB(166, 53, 53),
+        Accent = FromRGB(46, 164, 94),
+    },
+    Crimson = {
+        Background = FromRGB(40, 30, 30),
+        Inline = FromRGB(28, 20, 20),
+        Element = FromRGB(56, 42, 42),
+        Border = FromRGB(80, 60, 60),
+        Outline = FromRGB(18, 12, 12),
+        Text = FromRGB(180, 160, 160),
+        TextActive = FromRGB(255, 255, 255),
+        Risky = FromRGB(205, 70, 70),
+        Close = FromRGB(166, 53, 53),
+        Accent = FromRGB(164, 34, 34),
+    },
+    Violet = {
+        Background = FromRGB(35, 30, 40),
+        Inline = FromRGB(24, 20, 28),
+        Element = FromRGB(48, 42, 56),
+        Border = FromRGB(70, 60, 80),
+        Outline = FromRGB(15, 12, 18),
+        Text = FromRGB(170, 160, 180),
+        TextActive = FromRGB(255, 255, 255),
+        Risky = FromRGB(205, 70, 70),
+        Close = FromRGB(166, 53, 53),
+        Accent = FromRGB(114, 24, 164),
+    }
 }
+
+local Library = {
+    Version = "1.0.0",
+    Flags = {},
+    Themes = Themes,
+    ThemeName = "Slot",
+    Theme = table.clone(Themes.Slot),
+    Gradient = DefaultGradient,
+    Connections = {},
+    ThemeMap = setmetatable({}, { __mode = "k" }),
+    GradientItems = setmetatable({}, { __mode = "k" }),
+}
+
+Library.Font = Font.new("rbxasset://fonts/families/Inter.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
 
 local function Create(Class, Props)
     local Item = Instance.new(Class)
@@ -69,11 +126,12 @@ local function GradientStroke(Parent, Thickness)
         Thickness = Thickness or 1,
         ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     })
-    Create("UIGradient", {
+    local Gradient = Create("UIGradient", {
         Parent = Stroke,
         Rotation = 37.84,
-        Color = SlotGradient
+        Color = Library.Gradient
     })
+    Library.GradientItems[Gradient] = true
     return Stroke
 end
 
@@ -100,6 +158,120 @@ local function MakeDraggable(Handle, Target)
     end)
 end
 
+function Library:SetTheme(Name)
+    if Themes[Name] then
+        self.ThemeName = Name
+        for K, V in pairs(Themes[Name]) do
+            self.Theme[K] = V
+        end
+    end
+end
+
+function Library:ChangeTheme(Key, Color3Value)
+    if self.Theme[Key] then
+        self.Theme[Key] = Color3Value
+    end
+end
+
+function Library:SetGradient(ColorSeq)
+    self.Gradient = ColorSeq
+    for Grad, _ in pairs(self.GradientItems) do
+        if Grad and Grad.Parent then
+            Grad.Color = ColorSeq
+        end
+    end
+end
+
+function Library:Watermark(Text)
+    local Label = Create("TextLabel", {
+        Parent = self.Holder,
+        Position = UDim2New(0, 12, 0, 12),
+        Size = UDim2New(0, 200, 0, 24),
+        Text = Text or "Slot UI Watermark",
+        TextColor3 = Library.Theme.TextActive,
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
+    return {
+        SetText = function(_, NewText) Label.Text = NewText end,
+        SetVisibility = function(_, Bool) Label.Visible = Bool end
+    }
+end
+
+function Library:KeybindList()
+    local Frame = Create("Frame", {
+        Parent = self.Holder,
+        Position = UDim2New(1, -212, 0, 12),
+        Size = UDim2New(0, 200, 0, 150),
+        BackgroundColor3 = Library.Theme.Inline,
+        Visible = false
+    })
+    GradientStroke(Frame, 1)
+    return {
+        SetVisibility = function(_, Bool) Frame.Visible = Bool end
+    }
+end
+
+function Library:Notification(Text, Duration, Color, Icon)
+    print("[Slot UI Notification]: " .. tostring(Text))
+end
+
+function Library:SaveConfig(Name)
+    local Data = {}
+    for Flag, Val in pairs(self.Flags) do
+        Data[Flag] = Val
+    end
+    if writefile then
+        pcall(function()
+            writefile("SlotUI_" .. tostring(Name) .. ".json", HttpService:JSONEncode(Data))
+        end)
+    end
+end
+
+function Library:LoadConfigFile(Name)
+    if readfile and isfile and isfile("SlotUI_" .. tostring(Name) .. ".json") then
+        local Success, Res = pcall(function()
+            return HttpService:JSONDecode(readfile("SlotUI_" .. tostring(Name) .. ".json"))
+        end)
+        if Success and type(Res) == "table" then
+            for K, V in pairs(Res) do
+                self.Flags[K] = V
+            end
+        end
+    end
+end
+
+function Library:DeleteConfig(Name)
+    if delfile and isfile and isfile("SlotUI_" .. tostring(Name) .. ".json") then
+        pcall(function() delfile("SlotUI_" .. tostring(Name) .. ".json") end)
+    end
+end
+
+function Library:ListConfigs()
+    local List = {}
+    if listfiles then
+        local Success, Res = pcall(function() return listfiles("") end)
+        if Success then
+            for _, File in pairs(Res) do
+                if string.match(File, "SlotUI_.*%.json") then
+                    table.insert(List, string.gsub(string.match(File, "SlotUI_(.*)%.json"), ".json", ""))
+                end
+            end
+        end
+    end
+    return List
+end
+
+function Library:GetConfig()
+    return HttpService:JSONEncode(self.Flags)
+end
+
+function Library:LoadConfig(JsonString)
+    local Success, Res = pcall(function() return HttpService:JSONDecode(JsonString) end)
+    if Success and type(Res) == "table" then
+        for K, V in pairs(Res) do self.Flags[K] = V end
+    end
+end
+
 function Library:Unload()
     if self.Holder then self.Holder:Destroy() end
     Env.Library = nil
@@ -115,7 +287,6 @@ Library.Holder = Create("ScreenGui", {
 function Library:Window(Data)
     Data = Data or {}
     local WindowSize = Data.Size or UDim2New(0, 686, 0, 678)
-
     local WindowClass = { Pages = {} }
 
     local MainFrame = Create("Frame", {
@@ -262,7 +433,7 @@ function Library:Window(Data)
             local SecFrame = Create("Frame", {
                 Name = SecName .. "_Section",
                 Parent = Column,
-                Size = UDim2New(1, 0, 0, 240),
+                Size = UDim2New(1, 0, 0, 260),
                 BackgroundColor3 = Library.Theme.Inline
             })
             GradientStroke(SecFrame, 1)
@@ -284,27 +455,45 @@ function Library:Window(Data)
             })
             Create("UIListLayout", { Parent = Container, Padding = UDimNew(0, 6), SortOrder = Enum.SortOrder.LayoutOrder })
 
-            -- Add Toggle
+            function SecClass:Label(TextOrData)
+                local Text = type(TextOrData) == "table" and TextOrData.Name or tostring(TextOrData or "Label")
+                local Lbl = Create("TextLabel", { Parent = Container, Size = UDim2New(1, 0, 0, 18), Text = Text, TextXAlignment = Enum.TextXAlignment.Left })
+                local LblObj = {}
+                function LblObj:Keybind(...) return LblObj end
+                function LblObj:Colorpicker(...) return LblObj end
+                return LblObj
+            end
+
+            function SecClass:Divider()
+                Create("Frame", { Parent = Container, Size = UDim2New(1, 0, 0, 2), BackgroundColor3 = Library.Theme.Border })
+            end
+
             function SecClass:Toggle(TogData)
                 TogData = TogData or {}
+                local Flag = TogData.Flag
+                local State = TogData.Default or false
+                if Flag then Library.Flags[Flag] = State end
+
                 local Row = Create("Frame", { Parent = Container, Size = UDim2New(1, 0, 0, 20), BackgroundTransparency = 1 })
-                local Box = Create("Frame", { Parent = Row, Size = UDim2New(0, 14, 0, 14), Position = UDim2New(0, 0, 0, 3), BackgroundColor3 = Library.Theme.Element })
+                local Box = Create("Frame", { Parent = Row, Size = UDim2New(0, 14, 0, 14), Position = UDim2New(0, 0, 0, 3), BackgroundColor3 = State and Library.Theme.Accent or Library.Theme.Element })
                 GradientStroke(Box, 1)
                 
                 Create("TextLabel", { Parent = Row, Position = UDim2New(0, 22, 0, 0), Size = UDim2New(1, -22, 1, 0), Text = TogData.Name or "Toggle", TextXAlignment = Enum.TextXAlignment.Left })
                 local Btn = Create("TextButton", { Parent = Row, Size = UDim2New(1, 0, 1, 0), BackgroundTransparency = 1, Text = "" })
 
-                local State = TogData.Default or false
-                Box.BackgroundColor3 = State and Library.Theme.Accent or Library.Theme.Element
-
                 Btn.MouseButton1Click:Connect(function()
                     State = not State
                     Box.BackgroundColor3 = State and Library.Theme.Accent or Library.Theme.Element
+                    if Flag then Library.Flags[Flag] = State end
                     if TogData.Callback then TogData.Callback(State) end
                 end)
+
+                local TogObj = {}
+                function TogObj:Keybind(...) return TogObj end
+                function TogObj:Colorpicker(...) return TogObj end
+                return TogObj
             end
 
-            -- Add Button
             function SecClass:Button(BtnData)
                 BtnData = BtnData or {}
                 local BtnFrame = Create("Frame", { Parent = Container, Size = UDim2New(1, 0, 0, 24), BackgroundColor3 = Library.Theme.Element })
@@ -315,11 +504,67 @@ function Library:Window(Data)
                 Btn.MouseButton1Click:Connect(function()
                     if BtnData.Callback then BtnData.Callback() end
                 end)
+
+                local BtnObj = {}
+                function BtnObj:SubButton(...) return BtnObj end
+                return BtnObj
             end
 
-            -- Add Label
-            function SecClass:Label(Text)
-                Create("TextLabel", { Parent = Container, Size = UDim2New(1, 0, 0, 18), Text = tostring(Text), TextXAlignment = Enum.TextXAlignment.Left })
+            function SecClass:Slider(SliderData)
+                SliderData = SliderData or {}
+                local Min = SliderData.Min or 0
+                local Max = SliderData.Max or 100
+                local Val = SliderData.Default or Min
+                local Flag = SliderData.Flag
+                if Flag then Library.Flags[Flag] = Val end
+
+                local Frame = Create("Frame", { Parent = Container, Size = UDim2New(1, 0, 0, 36), BackgroundTransparency = 1 })
+                Create("TextLabel", { Parent = Frame, Size = UDim2New(1, 0, 0, 16), Text = (SliderData.Name or "Slider") .. ": " .. tostring(Val), TextXAlignment = Enum.TextXAlignment.Left })
+
+                local Track = Create("Frame", { Parent = Frame, Position = UDim2New(0, 0, 0, 20), Size = UDim2New(1, 0, 0, 10), BackgroundColor3 = Library.Theme.Element })
+                GradientStroke(Track, 1)
+                local Fill = Create("Frame", { Parent = Track, Size = UDim2New((Val - Min)/(Max - Min), 0, 1, 0), BackgroundColor3 = Library.Theme.Accent })
+
+                local Dragging = false
+                Track.InputBegan:Connect(function(Input)
+                    if Input.UserInputType == Enum.UserInputType.MouseButton1 then Dragging = true end
+                end)
+                UserInputService.InputEnded:Connect(function(Input)
+                    if Input.UserInputType == Enum.UserInputType.MouseButton1 then Dragging = false end
+                end)
+                UserInputService.InputChanged:Connect(function(Input)
+                    if Dragging and Input.UserInputType == Enum.UserInputType.MouseMovement then
+                        local Pos = math.clamp((Input.Position.X - Track.AbsolutePosition.X) / Track.AbsoluteSize.X, 0, 1)
+                        Val = math.floor(Min + ((Max - Min) * Pos))
+                        Fill.Size = UDim2New(Pos, 0, 1, 0)
+                        if Flag then Library.Flags[Flag] = Val end
+                        if SliderData.Callback then SliderData.Callback(Val) end
+                    end
+                end)
+            end
+
+            function SecClass:Textbox(BoxData)
+                BoxData = BoxData or {}
+                local Flag = BoxData.Flag
+                local Frame = Create("Frame", { Parent = Container, Size = UDim2New(1, 0, 0, 24), BackgroundColor3 = Library.Theme.Element })
+                GradientStroke(Frame, 1)
+                local Box = Create("TextBox", { Parent = Frame, Size = UDim2New(1, -10, 1, 0), Position = UDim2New(0, 5, 0, 0), Text = BoxData.Default or "", PlaceholderText = BoxData.Placeholder or "Input...", TextXAlignment = Enum.TextXAlignment.Left })
+                Box.FocusLost:Connect(function(Enter)
+                    if Flag then Library.Flags[Flag] = Box.Text end
+                    if BoxData.Callback then BoxData.Callback(Box.Text, Enter) end
+                end)
+            end
+
+            function SecClass:Dropdown(DropData)
+                DropData = DropData or {}
+                local Frame = Create("Frame", { Parent = Container, Size = UDim2New(1, 0, 0, 24), BackgroundColor3 = Library.Theme.Element })
+                GradientStroke(Frame, 1)
+                Create("TextLabel", { Parent = Frame, Position = UDim2New(0, 6, 0, 0), Size = UDim2New(1, -12, 1, 0), Text = (DropData.Name or "Dropdown") .. " v", TextXAlignment = Enum.TextXAlignment.Left })
+            end
+
+            function SecClass:Listbox(ListData)
+                local Frame = Create("Frame", { Parent = Container, Size = ListData.Size or UDim2New(1, 0, 0, 80), BackgroundColor3 = Library.Theme.Element })
+                GradientStroke(Frame, 1)
             end
 
             return SecClass
@@ -332,7 +577,13 @@ function Library:Window(Data)
         return PageClass
     end
 
+    function WindowClass:SettingsPage(SetData)
+        return self:Page({ Name = SetData and SetData.Name or "Settings" })
+    end
+
     function WindowClass:SetOpen(Bool) MainFrame.Visible = Bool end
+    function WindowClass:Toggle() MainFrame.Visible = not MainFrame.Visible end
+
     return WindowClass
 end
 
