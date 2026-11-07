@@ -1,5 +1,5 @@
 --[[
-    Logic Module (logic.lua)
+    Slot UI - Logic Module (logic.lua)
 ]]
 
 local Logic = {}
@@ -14,7 +14,7 @@ local TweenService      = game:GetService("TweenService")
 local CoreGui           = game:GetService("CoreGui")
 
 local Camera = Workspace.CurrentCamera
-local Client = Players.LocalPlayer
+local LocalPlayer = Players.LocalPlayer
 
 local connections = {}
 local gui, frame, header, resizeHandle
@@ -26,9 +26,9 @@ function Logic.Init(Library, SETTINGS)
         return
     end
 
-    local armorSettings = SETTINGS.ArmorViewer or {}
+    local armorSettings = SETTINGS and SETTINGS.ArmorViewer or {}
 
-    -- 1. Items Module & Weapon Lookup Setup for ArmorViewer
+    -- Items module setup for ArmorViewer
     local ItemsModule
     do
         local Modules = ReplicatedStorage:WaitForChild("Modules", 10)
@@ -104,7 +104,7 @@ function Logic.Init(Library, SETTINGS)
     }
 
     local function GetHeldWeapon(character)
-        if character == Client.Character then
+        if character == LocalPlayer.Character then
             local vfx = Workspace:FindFirstChild("VFX")
             local vms = vfx and vfx:FindFirstChild("VMs")
             if vms then
@@ -143,7 +143,7 @@ function Logic.Init(Library, SETTINGS)
         return ""
     end
 
-    -- 2. Construct ArmorViewer GUI
+    -- Construct ArmorViewer GUI
     gui = Instance.new("ScreenGui")
     gui.Name = "ArmorViewer"
     gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
@@ -326,7 +326,7 @@ function Logic.Init(Library, SETTINGS)
 
         local best, bestDist = nil, armorSettings.MaxDistance or 500
         for _, plr in ipairs(Players:GetPlayers()) do
-            if plr ~= Client and plr.Character then
+            if plr ~= LocalPlayer and plr.Character then
                 local root = plr.Character:FindFirstChild("HumanoidRootPart")
                 if root then
                     local d = (Camera.CFrame.Position - root.Position).Magnitude
@@ -337,16 +337,15 @@ function Logic.Init(Library, SETTINGS)
         return best
     end
 
-    -- 3. Render Loop (Handling both FOV and ArmorViewer updates)
+    -- Real-time feature loop (FOV + ArmorViewer)
     local scanTimer = 0
-    local lastHash = ""
     local healthShown = nil
 
-    local conn = RunService.RenderStepped:Connect(function(dt)
+    local renderConn = RunService.RenderStepped:Connect(function(dt)
         Camera = Workspace.CurrentCamera
 
         -- FOV Logic
-        if SETTINGS.Fov and SETTINGS.Fov.Enabled then
+        if SETTINGS and SETTINGS.Fov and SETTINGS.Fov.Enabled then
             local targetFOV = Library.Flags["Aim_FOV"] or SETTINGS.Fov.Value
             if Camera then
                 Camera.FieldOfView = targetFOV
@@ -371,7 +370,6 @@ function Logic.Init(Library, SETTINGS)
 
         if not target then
             frame.Visible = false
-            lastHash = ""
             return
         end
 
@@ -431,15 +429,25 @@ function Logic.Init(Library, SETTINGS)
         frame.Visible = true
     end)
 
-    table.insert(connections, conn)
+    table.insert(connections, renderConn)
+
     print("[Logic Module]: Initialized successfully.")
 end
 
+-- Function to turn off and reset all active features
 function Logic.DisableAll(SETTINGS)
-    if SETTINGS and SETTINGS.Fov then
-        SETTINGS.Fov.Enabled = false
-        if Camera then
-            Camera.FieldOfView = SETTINGS.Fov.Base
+    if SETTINGS then
+        -- Reset FOV
+        if SETTINGS.Fov then
+            SETTINGS.Fov.Enabled = false
+            if Camera then
+                Camera.FieldOfView = SETTINGS.Fov.Base
+            end
+        end
+        
+        -- Reset ArmorViewer settings if present
+        if SETTINGS.ArmorViewer then
+            SETTINGS.ArmorViewer.Enabled = false
         end
     end
 
@@ -452,7 +460,7 @@ function Logic.DisableAll(SETTINGS)
         gui:Destroy()
     end
 
-    print("[Logic Module]: All features disabled and reset.")
+    print("[Logic Module]: All features disabled and reset to default.")
 end
 
 return Logic
