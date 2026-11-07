@@ -353,7 +353,9 @@ function Logic.Init(Library, SETTINGS)
     applyScale(userScale)
     clampToScreen()
 
-    -- Input Handling for Dragging and Resizing
+    -------------------------------------------------
+    -- Input: drag, resize, toggle key, viewport changes
+    -------------------------------------------------
     local function connect(signal, fn)
         local c = signal:Connect(fn)
         table.insert(connections, c)
