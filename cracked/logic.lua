@@ -177,6 +177,7 @@ function Logic.Init(Library, SETTINGS)
     header.Position = UDim2.fromOffset(0, -(BASE_HEADER_H + BASE_HEADER_GAP))
     header.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
     header.BorderSizePixel = 0
+    header.Active = true
     header.Parent = frame
 
     local headerCorner = Instance.new("UICorner")
@@ -274,6 +275,7 @@ function Logic.Init(Library, SETTINGS)
     resizeHandle.BackgroundTransparency = 0.25
     resizeHandle.BorderSizePixel = 0
     resizeHandle.ZIndex = 20
+    resizeHandle.Active = true
     resizeHandle.Parent = frame
 
     local MIN_SCALE, MAX_SCALE = 0.45, 2.2
@@ -379,7 +381,8 @@ function Logic.Init(Library, SETTINGS)
         end
     end)
 
-    connect(frame.InputBegan, function(input)
+    -- Dragging from the Header bar
+    connect(header.InputBegan, function(input)
         if isPress(input) and not isResizing and not armorSettings.LockPosition then
             dragging = true
             dragStartMouse = UserInputService:GetMouseLocation()
