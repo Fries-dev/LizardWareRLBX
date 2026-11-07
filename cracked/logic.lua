@@ -434,7 +434,7 @@ function Logic.Init(Library, SETTINGS)
     print("[Logic Module]: Initialized successfully.")
 end
 
--- Function to turn off and reset all active features
+-- Function to turn off and reset all active features (without breaking startup initialization)
 function Logic.DisableAll(SETTINGS)
     if SETTINGS then
         -- Reset FOV
@@ -443,11 +443,6 @@ function Logic.DisableAll(SETTINGS)
             if Camera then
                 Camera.FieldOfView = SETTINGS.Fov.Base
             end
-        end
-        
-        -- Reset ArmorViewer settings if present
-        if SETTINGS.ArmorViewer then
-            SETTINGS.ArmorViewer.Enabled = false
         end
     end
 
