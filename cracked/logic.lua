@@ -276,8 +276,9 @@ function Logic.Init(Library, SETTINGS)
     resizeHandle.ZIndex = 20
     resizeHandle.Parent = frame
 
-    local userScale, curScale = 1, 1
+    local MIN_SCALE, MAX_SCALE = 0.45, 2.2
     local REF_W, REF_H = 1920, 1080
+    local userScale, curScale = 1, 1
 
     local function screenFactor()
         local vp = Camera.ViewportSize
@@ -293,7 +294,7 @@ function Logic.Init(Library, SETTINGS)
     end
 
     local function applyScale(us)
-        userScale = math.clamp(us, 0.45, 2.2)
+        userScale = math.clamp(us, MIN_SCALE, MAX_SCALE)
         local scale = userScale * screenFactor()
         curScale = scale
 
@@ -305,19 +306,110 @@ function Logic.Init(Library, SETTINGS)
         local headerH = math.floor(BASE_HEADER_H * scale)
         header.Size = UDim2.fromOffset(math.floor(w * scale), headerH)
         header.Position = UDim2.fromOffset(0, -(headerH + math.floor(BASE_HEADER_GAP * scale)))
+        local hText = math.max(4, math.floor(14 * scale + 0.5))
+        headerName.TextSize = hText
+        headerInfo.TextSize = hText
+        local barH = math.max(2, math.floor(4 * scale))
+        healthBack.Size = UDim2.new(1, 0, 0, barH)
+        healthBack.Position = UDim2.new(0, 0, 1, -barH)
 
         local slotW, slotH = math.floor(BASE_SLOT_W * scale), math.floor(BASE_SLOT_H * scale)
         local gapX, gapY = math.floor(BASE_GAP_X * scale), math.floor(BASE_GAP_Y * scale)
+        local imgW, imgH = math.floor(BASE_IMG_W * scale), math.floor(BASE_IMG_H * scale)
+        local imgX, imgY = math.floor(BASE_IMG_X * scale), math.floor(BASE_IMG_Y * scale)
 
         for i, slot in ipairs(slots) do
             local col = (i - 1) % cols
             local row = math.floor((i - 1) / cols)
             slot.Size = UDim2.fromOffset(slotW, slotH)
             slot.Position = UDim2.fromOffset(col * (slotW + gapX), row * (slotH + gapY))
+
+            slot.UIStroke.Thickness = math.max(2, 4 * scale)
+
+            slot.ArmorImage.Size = UDim2.fromOffset(imgW, imgH)
+            slot.ArmorImage.Position = UDim2.fromOffset(imgX, imgY)
+
+            local lbl = slot.ArmorName
+            lbl.TextSize = math.max(4, math.floor(11 * scale + 0.5))
+            lbl.Size = UDim2.new(1, -math.floor(8 * scale), 0, math.floor(16 * scale))
+            lbl.Position = UDim2.new(0, math.floor(4 * scale), 1, -math.floor(18 * scale))
+
+            local tl = slot.ArmorType
+            tl.TextSize = math.max(4, math.floor(9 * scale + 0.5))
+            tl.Size = UDim2.new(0.7, 0, 0, math.floor(12 * scale))
+            tl.Position = UDim2.fromOffset(math.floor(6 * scale), math.floor(4 * scale))
         end
     end
 
+    local function clampToScreen()
+        local vp = Camera.ViewportSize
+        local w, h = math.floor(baseW * curScale), math.floor(baseH * curScale)
+        local top = armorSettings.ShowHeader and math.floor((BASE_HEADER_H + BASE_HEADER_GAP) * curScale) or 0
+        local x = math.clamp(frame.Position.X.Offset, 0, math.max(0, vp.X - w))
+        local y = math.clamp(frame.Position.Y.Offset, top, math.max(top, vp.Y - h))
+        frame.Position = UDim2.fromOffset(x, y)
+    end
+
     applyScale(userScale)
+    clampToScreen()
+
+    -- Input Handling for Dragging and Resizing
+    local function connect(signal, fn)
+        local c = signal:Connect(fn)
+        table.insert(connections, c)
+        return c
+    end
+
+    local isResizing, resizeStartMouse, resizeStartSize = false, nil, nil
+    local dragging, dragStartMouse, dragStartPos = false, nil, nil
+
+    local function isPress(input)
+        return input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch
+    end
+
+    connect(resizeHandle.InputBegan, function(input)
+        if isPress(input) and not armorSettings.LockPosition then
+            isResizing = true
+            dragging = false
+            resizeStartMouse = UserInputService:GetMouseLocation()
+            resizeStartSize = Vector2.new(baseW * curScale, baseH * curScale)
+        end
+    end)
+
+    connect(frame.InputBegan, function(input)
+        if isPress(input) and not isResizing and not armorSettings.LockPosition then
+            dragging = true
+            dragStartMouse = UserInputService:GetMouseLocation()
+            dragStartPos = Vector2.new(frame.Position.X.Offset, frame.Position.Y.Offset)
+        end
+    end)
+
+    connect(UserInputService.InputEnded, function(input)
+        if isPress(input) then
+            isResizing = false
+            dragging = false
+        end
+    end)
+
+    connect(UserInputService.InputChanged, function(input)
+        if input.UserInputType ~= Enum.UserInputType.MouseMovement
+            and input.UserInputType ~= Enum.UserInputType.Touch then return end
+
+        local mouse = UserInputService:GetMouseLocation()
+        if isResizing then
+            local delta = mouse - resizeStartMouse
+            local f = screenFactor()
+            local sx = (resizeStartSize.X + delta.X) / (baseW * f)
+            local sy = (resizeStartSize.Y + delta.Y) / (baseH * f)
+            applyScale(math.max(sx, sy))
+            clampToScreen()
+        elseif dragging then
+            local delta = mouse - dragStartMouse
+            frame.Position = UDim2.fromOffset(dragStartPos.X + delta.X, dragStartPos.Y + delta.Y)
+            clampToScreen()
+        end
+    end)
 
     local function GetTarget()
         local t = rawget(_G, "scorpionTargeting")
@@ -358,6 +450,7 @@ function Logic.Init(Library, SETTINGS)
             return
         end
 
+        resizeHandle.Visible = not armorSettings.LockPosition
         header.Visible = armorSettings.ShowHeader
         for _, slot in ipairs(slots) do
             slot.BackgroundTransparency = armorSettings.SlotTransparency or 0
@@ -434,7 +527,7 @@ function Logic.Init(Library, SETTINGS)
     print("[Logic Module]: Initialized successfully.")
 end
 
--- Function to turn off and reset all active features (without breaking startup initialization)
+-- Function to turn off and reset all active features
 function Logic.DisableAll(SETTINGS)
     if SETTINGS then
         -- Reset FOV
